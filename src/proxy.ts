@@ -33,11 +33,13 @@ export const config = {
     "/legal/ai-disclaimer",
     "/legal/privacy",
     "/legal/terms",
+    "/chat",
     "/en",
     "/en/pricing",
     "/en/waitlist",
     "/en/legal/ai-disclaimer",
     "/en/legal/privacy",
     "/en/legal/terms",
+    "/en/chat",
   ],
 };

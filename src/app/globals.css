@@ -77,3 +77,22 @@ body {
   background: var(--color-brand);
   color: var(--color-ink);
 }
+
+/* Chat app shell — reuses the site's light theme, but its dark theme is a
+   dedicated near-black distinct from the marketing site's dark surface. */
+.chat-shell {
+  --chat-bg: var(--color-paper);
+  --chat-surface: var(--color-surface);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .chat-shell {
+    --chat-bg: #0d0f15;
+    --chat-surface: #14171f;
+  }
+}
+
+:root[data-theme="dark"] .chat-shell {
+  --chat-bg: #0d0f15;
+  --chat-surface: #14171f;
+}

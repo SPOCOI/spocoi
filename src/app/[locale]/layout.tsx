@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { notFound } from "next/navigation";
-import { NavBar } from "@/components/NavBar";
-import { Footer } from "@/components/Footer";
 import { locales, isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import "../globals.css";
@@ -42,11 +40,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={typedLocale} className={poppins.variable}>
-      <body className="flex min-h-screen flex-col font-sans antialiased">
-        <NavBar locale={typedLocale} />
-        <main className="flex-1">{children}</main>
-        <Footer locale={typedLocale} />
-      </body>
+      <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   );
 }
