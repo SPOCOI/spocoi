@@ -41,10 +41,7 @@ export default async function Home() {
         <div className="mb-8 flex justify-center">
           <LogoMark className="h-14 w-14" />
         </div>
-        <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
-          Pentru tine, din Moldova, România sau diaspora
-        </span>
-        <h1 className="mt-3 text-balance text-[clamp(1.875rem,1rem+4vw,3.75rem)] font-semibold leading-tight tracking-tight">
+        <h1 className="text-balance text-[clamp(1.875rem,1rem+4vw,3.75rem)] font-semibold leading-tight tracking-tight">
           Vorbește despre ce te apasă,
           <br />
           <span className="text-brand-deep">oricând ai nevoie</span>
