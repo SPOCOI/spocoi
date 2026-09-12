@@ -1,14 +1,4 @@
-"use client";
-
-import { useState } from "react";
-
-type Region = "MD" | "RO" | "UE";
-
-const regions: { id: Region; label: string }[] = [
-  { id: "MD", label: "Moldova" },
-  { id: "RO", label: "România" },
-  { id: "UE", label: "Restul UE" },
-];
+import type { Region } from "@/lib/region";
 
 type Tier = {
   id: string;
@@ -56,31 +46,9 @@ function formatPrice(value: number) {
   return `$${value.toFixed(2)}`;
 }
 
-export function PricingTiers() {
-  const [region, setRegion] = useState<Region>("MD");
-
+export function PricingTiers({ region }: { region: Region }) {
   return (
     <div>
-      <div className="flex justify-center">
-        <div className="inline-flex rounded-full border border-line bg-surface p-1">
-          {regions.map((r) => (
-            <button
-              key={r.id}
-              type="button"
-              onClick={() => setRegion(r.id)}
-              aria-pressed={region === r.id}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                region === r.id
-                  ? "bg-brand text-ink"
-                  : "text-ink-soft hover:text-ink"
-              }`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiers.map((tier) => (
           <div

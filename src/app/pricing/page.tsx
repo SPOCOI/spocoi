@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { PricingTiers } from "@/components/PricingTiers";
+import { REGION_HEADER, resolveRegion, type Region } from "@/lib/region";
 
 export const metadata: Metadata = {
   title: "Prețuri — spocoi",
@@ -8,7 +10,10 @@ export const metadata: Metadata = {
     "Prețuri geo-adaptive pentru Moldova, România și UE, plus sesiunile voce incluse în fiecare plan spocoi.",
 };
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const headersList = await headers();
+  const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
+
   return (
     <>
       <section className="mx-auto max-w-4xl px-5 pb-14 pt-20 text-center md:pt-28">
@@ -19,13 +24,13 @@ export default function PricingPage() {
           Prețuri adaptate acolo unde trăiești
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-balance text-lg text-ink-soft">
-          Moldova, România sau restul Uniunii Europene — alege regiunea ta și
-          vezi prețul potrivit. Fără costuri ascunse.
+          Prețul de mai jos e deja adaptat locației tale. Fără costuri
+          ascunse.
         </p>
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-16">
-        <PricingTiers />
+        <PricingTiers region={region} />
       </section>
 
       <section className="mx-auto max-w-3xl px-5 pb-24">
@@ -33,7 +38,8 @@ export default function PricingPage() {
           <strong className="text-ink">De reținut:</strong> sesiunile voce
           incluse în fiecare plan sunt conversații de câte 5 minute. Nu suntem
           încă lansați, așa că aceste prețuri pot suferi ajustări minore până
-          atunci.{" "}
+          atunci. Dacă prețul afișat nu pare cel potrivit pentru locația ta,
+          scrie-ne la support@spocoi.co.{" "}
           <Link href="/waitlist" className="underline hover:text-ink">
             Intră pe waitlist
           </Link>{" "}
