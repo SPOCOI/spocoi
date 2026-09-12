@@ -1,6 +1,12 @@
 # SPOCOI — context de proiect
 
-SPOCOI e o platformă AI de suport emoțional (conversații voce/text, RO/RU/EN) pentru Moldova, România și diaspora UE — alternativă accesibilă 24/7 la terapie tradițională. Suport emoțional larg e identitatea de bază; detectarea manipulării/relațiilor toxice e o funcționalitate secundară, nu focusul. Public țintă: vârstă medie 38.6 ani → ton matur, autentic. **Explicit NOT Gen Z, NOT superficial.**
+SPOCOI e o platformă AI de suport emoțional (conversații voce/text) pentru Moldova, România și diaspora UE — alternativă accesibilă 24/7 la terapie tradițională. Suport emoțional larg e identitatea de bază; detectarea manipulării/relațiilor toxice e o funcționalitate secundară, nu focusul. Public țintă: vârstă medie 38.6 ani → ton matur, autentic. **Explicit NOT Gen Z, NOT superficial.**
+
+## Limbi — decizie 12 septembrie 2026, folosește ASTA, nu planul vechi RO/RU/EN
+
+Live acum: **română + engleză**. **Rusa a fost exclusă explicit** (decizie Daniel) — nu o reintroduce în copy, chiar dacă apare în materiale vechi/memorie ca parte din planul original RO/RU/EN. Candidați pentru extindere ulterioară, doar ca plan, neconstruit încă: **franceză și spaniolă** ("probabil", nu confirmat ferm). Poloneză și italiană au fost discutate și lăsate deoparte.
+
+Proces de traducere, dacă/când se construiește o limbă nouă: Claude generează traducerea ca punct de plecare, dar **un vorbitor nativ verifică tonul înainte de publicare** — mai ales pentru un produs de suport emoțional, unde tonul contează la fel de mult ca acuratețea gramaticală. Nu publica traduceri automate neverificate.
 
 Fondator & CEO: Daniel Graur. Lead developer/CTO: Nicolae.
 
@@ -46,7 +52,6 @@ Next.js (App Router) + TypeScript + Tailwind v4. Site de marketing/prezentare co
 - `src/components/` — Logo, NavBar, Footer și alte componente de brand comune. Reutilizează-le, nu duplica markup.
 - Design tokens (culori, fonturi) sunt în `src/app/globals.css` — folosește variabilele, nu hexuri hardcodate.
 - Aplicația de chat (auth, sesiuni, integrare AI) e **Faza 2**, neînceput încă — vezi `NEXT_STEPS.md`.
-- Poppins e încărcat cu `next/font/google` doar cu subset-urile `latin`/`latin-ext` — versiunea bundle-uită de Next.js nu oferă `cyrillic` ca opțiune tipată. Când se face varianta RU a site-ului, fontul chirilic trebuie încărcat separat (self-hosted woff2 sau `<link>` manual către Google Fonts cu `subset=cyrillic`), nu prin acest hook.
 
 ## Stil de lucru Daniel
 

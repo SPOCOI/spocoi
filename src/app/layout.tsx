@@ -14,7 +14,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "spocoi — vorbește despre ce te apasă, oricând",
   description:
-    "SPOCOI e un AI de suport emoțional în română, rusă și engleză — disponibil 24/7, fără costuri mari și fără liste de așteptare.",
+    "SPOCOI e un AI de suport emoțional în română și engleză — disponibil 24/7, fără costuri mari și fără liste de așteptare.",
 };
 
 export default function RootLayout({

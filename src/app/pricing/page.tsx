@@ -19,7 +19,7 @@ export default async function PricingPage() {
       <section className="mx-auto max-w-4xl px-5 pb-6 pt-20 text-center md:pt-28">
         <p className="mx-auto max-w-lg text-balance text-sm text-ink-soft">
           spocoi e o platformă de suport emoțional prin conversații AI, în
-          română, rusă și engleză — disponibilă 24/7, ca alternativă la
+          română și engleză — disponibilă 24/7, ca alternativă la
           terapia tradițională, scumpă și greu de accesat.{" "}
           <Link href="/#features" className="underline hover:text-ink">
             Vezi cum funcționează

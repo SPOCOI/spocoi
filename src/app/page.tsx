@@ -12,7 +12,7 @@ const topics = [
   },
   {
     title: "În limba ta",
-    body: "Română, rusă sau engleză — fără traduceri stângace, fără să explici de două ori ce vrei să spui.",
+    body: "Română sau engleză — fără traduceri stângace, fără să explici de două ori ce vrei să spui.",
   },
   {
     title: "Confidențial, găzduit în UE",
@@ -39,7 +39,7 @@ export default function Home() {
           <span className="text-brand-deep">oricând ai nevoie</span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-balance text-lg text-ink-soft">
-          Un AI de suport emoțional în română, rusă și engleză. Fără costuri
+          Un AI de suport emoțional în română și engleză. Fără costuri
           mari, fără liste de așteptare la cabinet, fără să te simți judecat.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
