@@ -64,7 +64,7 @@ export default function Home() {
 
       <section id="features" className="border-y border-line bg-surface/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <div className="mb-12">
+          <div className="mb-12 text-center">
             <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
               Ce faci pe spocoi
             </span>
