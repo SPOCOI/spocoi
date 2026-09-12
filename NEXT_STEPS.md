@@ -4,10 +4,13 @@
 
 - [x] Schelă Next.js + Tailwind v4 + Poppins + sistem de design (culori/token-uri din brandbook)
 - [x] Homepage (hero, features, disclaimer scurt, waitlist teaser)
-- [ ] Pricing (`/pricing`) — toggle regiune MD/RO/UE, model geo-adaptiv curent
-- [ ] Waitlist (`/waitlist`) — 3 niveluri, formular front-end (fără backend încă)
-- [ ] Pagini legale (`/legal/privacy`, `/legal/terms`, `/legal/ai-disclaimer`) — entitate corectă, vârstă unificată, marcate draft
-- [ ] Verificare vizuală în browser (light + dark), mobil + desktop
+- [x] Pricing (`/pricing`) — geo-adaptiv automat MD/RO/UE, fără toggle vizibil
+- [x] Waitlist (`/waitlist`) — 3 niveluri, formular front-end (fără backend încă)
+- [x] Pagini legale (`/legal/privacy`, `/legal/terms`, `/legal/ai-disclaimer`) — entitate corectă, vârstă unificată, marcate draft
+- [x] Verificare vizuală în browser (light + dark, mobil + desktop) — spot-check pe homepage/pricing/waitlist
+- [ ] Favicon real (lună crescentă) — momentan e favicon-ul implicit Next.js, neînlocuit
+- [ ] Verifică/actualizează link-urile sociale din footer (Instagram/TikTok) — sunt presupuse (`spocoi`), nu confirmate ca fiind conturile reale
+- [ ] Trecere completă, pagină cu pagină, prin toate cele 6 rute în ambele teme + mobil (am verificat punctual, nu exhaustiv)
 - [ ] i18n real — acum doar română. Engleză confirmată ca a doua limbă; franceză/spaniolă candidați "probabil", neconfirmați ferm. Rusă exclusă explicit (12 septembrie 2026) — nu o adăuga fără o discuție nouă. Doar planificare deocamdată, nu construim infrastructura de rutare/traducere până nu se confirmă ordinea limbilor. Când se construiește: traducere Claude + verificare de vorbitor nativ înainte de publicare, vezi CLAUDE.md.
 - [ ] Waitlist conectat la o bază de date reală (Supabase, Frankfurt) în loc de formularul placeholder
 - [ ] Deploy pe Vercel + domeniu
