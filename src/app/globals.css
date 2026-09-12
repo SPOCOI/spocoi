@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --color-paper: #fbfaf6;
+  --color-surface: #ffffff;
+  --color-ink: #202836;
+  --color-ink-soft: #5b6478;
+  --color-ink-faint: #8891a3;
+  --color-line: #e7e4d8;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-brand: #ffc700;
+  --color-brand-soft: #fde882;
+  --color-brand-pale: #fffabf;
+  --color-brand-deep: #8a6900;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --color-paper: #14161d;
+    --color-surface: #1b1e28;
+    --color-ink: #edeff5;
+    --color-ink-soft: #a6aec2;
+    --color-ink-faint: #727b90;
+    --color-line: #2b2f3d;
+
+    --color-brand: #ffc700;
+    --color-brand-soft: #efce6a;
+    --color-brand-pale: #4a4322;
+    --color-brand-deep: #ffe38a;
   }
 }
 
+@theme inline {
+  --color-paper: var(--color-paper);
+  --color-surface: var(--color-surface);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-faint: var(--color-ink-faint);
+  --color-line: var(--color-line);
+  --color-brand: var(--color-brand);
+  --color-brand-soft: var(--color-brand-soft);
+  --color-brand-pale: var(--color-brand-pale);
+  --color-brand-deep: var(--color-brand-deep);
+  --font-sans: var(--font-poppins);
+}
+
+* {
+  border-color: var(--color-line);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+::selection {
+  background: var(--color-brand);
+  color: var(--color-ink);
 }
