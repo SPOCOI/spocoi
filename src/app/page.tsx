@@ -3,20 +3,20 @@ import { LogoMark } from "@/components/Logo";
 
 const topics = [
   {
-    title: "Ascultare fără judecată",
-    body: "Spui ce te apasă — o zi grea, o relație, anxietate, singurătate — și primești un răspuns care contează, nu clișee.",
+    title: "Nimeni nu te repede să „treci peste”",
+    body: "Poți vorbi despre o zi grea, o relație toxică, anxietate sau doar despre singurătate — fără să ți se spună să te descurci sau să nu te mai gândești la asta.",
   },
   {
-    title: "Voce sau text, cum ți-e mai comod",
-    body: "Vorbești cu vocea ta sau scrii, în funcție de moment. Conversația continuă exact de unde ai lăsat-o.",
+    title: "Vorbești sau scrii — cum ai chef azi",
+    body: "Unele zile vrei să vorbești cu voce tare, altele doar să scrii în liniște. Alegi tu, iar conversația continuă exact de unde ai lăsat-o.",
   },
   {
-    title: "În limba ta",
-    body: "Română sau engleză — fără traduceri stângace, fără să explici de două ori ce vrei să spui.",
+    title: "În limba ta, nu tradus stângaci",
+    body: "Multe aplicații sunt gândite pentru alte piețe și traduse ulterior. spocoi vorbește românește de la bază, nu ca o adaptare de ultim moment.",
   },
   {
-    title: "Confidențial, găzduit în UE",
-    body: "Conversațiile sunt criptate. Infrastructura stă integral în Uniunea Europeană, conform GDPR.",
+    title: "Ce spui rămâne între noi",
+    body: "Conversațiile sunt criptate, iar datele stau pe servere din Uniunea Europeană — nu pleacă în afara ei.",
   },
 ];
 
@@ -33,14 +33,18 @@ export default function Home() {
         <div className="mb-8 flex justify-center">
           <LogoMark className="h-14 w-14" />
         </div>
-        <h1 className="text-balance text-[clamp(1.875rem,1rem+4vw,3.75rem)] font-semibold leading-tight tracking-tight">
+        <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
+          Făcut pentru Moldova, România și diaspora
+        </span>
+        <h1 className="mt-3 text-balance text-[clamp(1.875rem,1rem+4vw,3.75rem)] font-semibold leading-tight tracking-tight">
           Vorbește despre ce te apasă,
           <br />
           <span className="text-brand-deep">oricând ai nevoie</span>
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-balance text-lg text-ink-soft">
-          Un AI de suport emoțional în română și engleză. Fără costuri
-          mari, fără liste de așteptare la cabinet, fără să te simți judecat.
+          Un psiholog bun e scump și greu de găsit acasă. spocoi ascultă
+          oricând ai nevoie, fără liste de așteptare și fără costuri pe care
+          nu ți le permiți.
         </p>
         <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link

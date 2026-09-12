@@ -14,7 +14,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "spocoi — vorbește despre ce te apasă, oricând",
   description:
-    "SPOCOI e un AI de suport emoțional în română și engleză — disponibil 24/7, fără costuri mari și fără liste de așteptare.",
+    "Un psiholog bun e scump și greu de găsit în Moldova și România. spocoi e un AI de suport emoțional disponibil 24/7, fără liste de așteptare și fără costuri pe care nu ți le permiți.",
 };
 
 export default function RootLayout({
