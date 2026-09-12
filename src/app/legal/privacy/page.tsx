@@ -58,6 +58,23 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
+      <h2>Prețuri adaptate locației tale</h2>
+      <p>
+        Pe pagina de prețuri, determinăm automat regiunea ta (Moldova,
+        România sau restul Uniunii Europene) pe baza adresei IP aproximative
+        a conexiunii tale, ca să-ți arătăm prețul potrivit fără să te punem
+        să alegi manual. Această verificare se face în timp real, la fiecare
+        vizită — nu construim un istoric al locațiilor tale și nu folosim
+        această informație în alt scop decât stabilirea prețului afișat.
+      </p>
+      <p>
+        Detecția automată se poate înșela ocazional (de exemplu, dacă
+        folosești un VPN sau ești în roaming). Dacă prețul afișat nu
+        corespunde țării tale, scrie-ne la{" "}
+        <a href="mailto:support@spocoi.co">support@spocoi.co</a> și
+        clarificăm situația manual.
+      </p>
+
       <h2>Cât timp păstrăm datele</h2>
       <p>
         Jurnalele de conversație sunt păstrate implicit timp de{" "}
