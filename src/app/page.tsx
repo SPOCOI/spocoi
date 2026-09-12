@@ -33,7 +33,7 @@ export default function Home() {
         <div className="mb-8 flex justify-center">
           <LogoMark className="h-14 w-14" />
         </div>
-        <h1 className="text-balance text-4xl font-semibold leading-tight tracking-tight md:text-6xl">
+        <h1 className="text-balance text-[clamp(1.875rem,1rem+4vw,3.75rem)] font-semibold leading-tight tracking-tight">
           Vorbește despre ce te apasă,
           <br />
           <span className="text-brand-deep">oricând ai nevoie</span>
@@ -68,7 +68,7 @@ export default function Home() {
             <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
               Ce faci pe spocoi
             </span>
-            <h2 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+            <h2 className="mt-3 text-balance text-[clamp(1.5rem,0.9rem+2.5vw,2.25rem)] font-semibold tracking-tight">
               Nu e un chatbot generic. E gândit pentru momentele grele.
             </h2>
           </div>
@@ -99,7 +99,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-4xl px-5 pb-24 text-center">
-        <h2 className="text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+        <h2 className="text-balance text-[clamp(1.5rem,0.9rem+2.5vw,2.25rem)] font-semibold tracking-tight">
           Waitlist-ul are 3 niveluri
         </h2>
         <p className="mx-auto mt-3 max-w-md text-ink-soft">

@@ -29,7 +29,7 @@ export function LegalPage({
         <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
           {eyebrow}
         </span>
-        <h1 className="mt-3 text-balance text-3xl font-semibold tracking-tight md:text-4xl">
+        <h1 className="mt-3 text-balance text-[clamp(1.5rem,0.9rem+2.5vw,2.25rem)] font-semibold tracking-tight">
           {title}
         </h1>
         <p className="mt-3 text-sm text-ink-faint">Ultima actualizare: {updated}</p>

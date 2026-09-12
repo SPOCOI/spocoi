@@ -33,7 +33,7 @@ export default function WaitlistPage() {
         <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
           Waitlist
         </span>
-        <h1 className="mt-3 text-balance text-4xl font-semibold leading-tight tracking-tight md:text-5xl">
+        <h1 className="mt-3 text-balance text-[clamp(1.75rem,1.2rem+3vw,3rem)] font-semibold leading-tight tracking-tight">
           Rezervă-ți locul înainte de lansare
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-balance text-lg text-ink-soft">
