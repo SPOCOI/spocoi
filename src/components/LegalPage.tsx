@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { getCrisisResources } from "@/lib/crisis";
+import type { Region } from "@/lib/region";
 
 /**
  * Shared chrome for the three legal pages (privacy, terms, ai-disclaimer):
@@ -16,11 +18,13 @@ export function LegalPage({
   eyebrow,
   title,
   updated,
+  region,
   children,
 }: {
   eyebrow: string;
   title: string;
   updated: string;
+  region: Region;
   children: ReactNode;
 }) {
   return (
@@ -40,7 +44,7 @@ export function LegalPage({
       </div>
 
       <div className={`${containerClass} mt-5`}>
-        <CrisisNotice />
+        <CrisisNotice region={region} />
       </div>
 
       <div
@@ -69,7 +73,9 @@ function DraftNotice() {
   );
 }
 
-function CrisisNotice() {
+function CrisisNotice({ region }: { region: Region }) {
+  const resources = getCrisisResources(region);
+
   return (
     <div className="rounded-2xl border-2 border-ink/70 bg-surface p-6 text-sm leading-relaxed text-ink-soft">
       <p className="font-semibold text-ink">
@@ -81,23 +87,19 @@ function CrisisNotice() {
       </p>
       <ul className="mt-3 space-y-1">
         <li>
-          <strong className="text-ink">Servicii de urgență:</strong> 112
+          <strong className="text-ink">Servicii de urgență:</strong> {resources.emergency}
         </li>
-        <li>
-          <strong className="text-ink">Poliție:</strong> 112
-        </li>
-        <li>
-          <strong className="text-ink">Linia de prevenire a suicidului:</strong>{" "}
-          0800 801 200
-        </li>
-        <li>
-          <strong className="text-ink">Linia de suport pentru sănătate mintală:</strong>{" "}
-          021 9629
-        </li>
+        {resources.lines.map((line) => (
+          <li key={line.label}>
+            <strong className="text-ink">{line.label}:</strong> {line.number}
+          </li>
+        ))}
       </ul>
+      {resources.note && <p className="mt-3">{resources.note}</p>}
       <p className="mt-3 text-ink-faint">
-        Dacă te afli în afara României, sună la numărul local de urgență sau
-        mergi la cea mai apropiată unitate medicală.
+        Dacă numărul de mai sus nu funcționează acolo unde ești, sună la
+        numărul local de urgență sau mergi la cea mai apropiată unitate
+        medicală.
       </p>
     </div>
   );

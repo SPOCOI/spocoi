@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
+import { REGION_HEADER, resolveRegion, type Region } from "@/lib/region";
 
 export const metadata: Metadata = {
   title: "Termeni și condiții — spocoi",
@@ -8,10 +10,14 @@ export const metadata: Metadata = {
     "Termenii și condițiile de utilizare a spocoi: eligibilitate, cont, abonamente, proprietate intelectuală și limitările serviciului.",
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const headersList = await headers();
+  const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
+
   return (
     <LegalPage
       eyebrow="Document legal"
+      region={region}
       title="Termeni și condiții"
       updated="12 septembrie 2026"
     >

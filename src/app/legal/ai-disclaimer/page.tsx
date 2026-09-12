@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
+import { REGION_HEADER, resolveRegion, type Region } from "@/lib/region";
 
 export const metadata: Metadata = {
   title: "Despre AI — spocoi",
@@ -8,10 +10,14 @@ export const metadata: Metadata = {
     "Ce este și ce nu este spocoi: natura serviciului, limitele conversației cu AI-ul și cum raportezi o problemă.",
 };
 
-export default function AiDisclaimerPage() {
+export default async function AiDisclaimerPage() {
+  const headersList = await headers();
+  const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
+
   return (
     <LegalPage
       eyebrow="Document legal"
+      region={region}
       title="Despre AI — limite și natura serviciului"
       updated="12 septembrie 2026"
     >

@@ -1,5 +1,8 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { LogoMark } from "@/components/Logo";
+import { getCrisisResources } from "@/lib/crisis";
+import { REGION_HEADER, resolveRegion, type Region } from "@/lib/region";
 
 const topics = [
   {
@@ -26,7 +29,12 @@ const waitlistTiers = [
   { name: "Early Adopter", range: "501–1000" },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const headersList = await headers();
+  const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
+  const crisis = getCrisisResources(region);
+  const crisisLine = crisis.lines[0];
+
   return (
     <>
       <section className="mx-auto max-w-4xl px-5 pb-20 pt-20 text-center md:pt-28">
@@ -93,8 +101,9 @@ export default function Home() {
         <div className="rounded-2xl border border-line bg-surface p-7 text-sm leading-relaxed text-ink-soft">
           <strong className="text-ink">Important:</strong> spocoi nu
           înlocuiește un psiholog sau psihiatru licențiat și nu e un serviciu
-          de urgență. Dacă treci printr-o criză, sună la 112 sau contactează
-          un specialist.{" "}
+          de urgență. Dacă treci printr-o criză, sună la {crisis.emergency}
+          {crisisLine ? <> sau la {crisisLine.label.toLowerCase()} ({crisisLine.number})</> : null}
+          , sau contactează un specialist.{" "}
           <Link href="/legal/ai-disclaimer" className="underline hover:text-ink">
             Detalii despre limitele AI-ului
           </Link>

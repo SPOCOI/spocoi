@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { LegalPage } from "@/components/LegalPage";
+import { REGION_HEADER, resolveRegion, type Region } from "@/lib/region";
 
 export const metadata: Metadata = {
   title: "Politica de confidențialitate — spocoi",
@@ -8,10 +10,14 @@ export const metadata: Metadata = {
     "Ce date colectăm, cât timp le păstrăm și ce drepturi ai conform GDPR ca utilizator spocoi.",
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const headersList = await headers();
+  const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
+
   return (
     <LegalPage
       eyebrow="Document legal"
+      region={region}
       title="Politica de confidențialitate"
       updated="12 septembrie 2026"
     >
