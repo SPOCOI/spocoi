@@ -1,9 +1,8 @@
-const MOON_PATH =
-  "M27 6C19 8 14 15 14 22c0 8 6 14 14 14 2.6 0 5-.6 7.1-1.7C31.4 37.9 26 40 20 40 9 40 0 31 0 20S9 0 20 0c3.2 0 6.2.8 8.9 2.1C26.4 3 27 4.4 27 6z";
+const MOON_PATH = "M17.58,2.52 A11,11 0 1,0 17.58,21.48 A9.5,9.5 0 0,1 17.58,2.52 Z";
 
 export function LogoMark({ className = "" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 40 40" fill="none" className={className} aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
       <path d={MOON_PATH} fill="var(--color-brand)" />
     </svg>
   );
