@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { getDictionary } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/config";
 
-export function WaitlistForm() {
+export function WaitlistForm({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale).waitlist;
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "submitting" | "done">(
     "idle",
@@ -26,10 +29,8 @@ export function WaitlistForm() {
   if (status === "done") {
     return (
       <div className="rounded-2xl border border-line bg-surface p-6 text-center">
-        <p className="font-semibold">Mulțumim, te contactăm la lansare.</p>
-        <p className="mt-1.5 text-sm text-ink-soft">
-          Ai fost adăugat pe waitlist la adresa {email}.
-        </p>
+        <p className="font-semibold">{t.successTitle}</p>
+        <p className="mt-1.5 text-sm text-ink-soft">{t.successBody(email)}</p>
       </div>
     );
   }
@@ -40,7 +41,7 @@ export function WaitlistForm() {
       className="flex flex-col gap-3 sm:flex-row sm:items-center"
     >
       <label htmlFor="waitlist-email" className="sr-only">
-        Adresa ta de email
+        {t.formPlaceholder}
       </label>
       <input
         id="waitlist-email"
@@ -48,7 +49,7 @@ export function WaitlistForm() {
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="adresa-ta@email.com"
+        placeholder={t.formPlaceholder}
         className="w-full rounded-full border border-line bg-paper px-5 py-3.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none focus:ring-2 focus:ring-brand sm:flex-1"
       />
       <button
@@ -56,7 +57,7 @@ export function WaitlistForm() {
         disabled={status === "submitting"}
         className="w-full shrink-0 rounded-full bg-brand px-7 py-3.5 text-sm font-semibold text-ink transition-transform hover:scale-[1.03] disabled:opacity-60 disabled:hover:scale-100 sm:w-auto"
       >
-        {status === "submitting" ? "Se trimite..." : "Rezervă-ți locul"}
+        {status === "submitting" ? t.formSubmitting : t.formSubmit}
       </button>
     </form>
   );

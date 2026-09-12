@@ -15,7 +15,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --color-paper: #14161d;
     --color-surface: #1b1e28;
     --color-ink: #edeff5;
@@ -28,6 +28,20 @@
     --color-brand-pale: #4a4322;
     --color-brand-deep: #ffe38a;
   }
+}
+
+:root[data-theme="dark"] {
+  --color-paper: #14161d;
+  --color-surface: #1b1e28;
+  --color-ink: #edeff5;
+  --color-ink-soft: #a6aec2;
+  --color-ink-faint: #727b90;
+  --color-line: #2b2f3d;
+
+  --color-brand: #ffc700;
+  --color-brand-soft: #efce6a;
+  --color-brand-pale: #4a4322;
+  --color-brand-deep: #ffe38a;
 }
 
 @theme inline {

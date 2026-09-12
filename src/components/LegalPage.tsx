@@ -1,10 +1,12 @@
 import type { ReactNode } from "react";
 import { getCrisisResources } from "@/lib/crisis";
 import type { Region } from "@/lib/region";
+import { getDictionary } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/config";
 
 /**
  * Shared chrome for the three legal pages (privacy, terms, ai-disclaimer):
- * title + "ultima actualizare", a draft-status notice, the crisis/emergency
+ * title + "last updated", a draft-status notice, the crisis/emergency
  * block, and a typographic wrapper for long-form prose content.
  *
  * The draft notice and the crisis block are deliberately separate elements
@@ -15,36 +17,40 @@ import type { Region } from "@/lib/region";
 const containerClass = "mx-auto max-w-[65ch] px-5";
 
 export function LegalPage({
-  eyebrow,
   title,
   updated,
   region,
+  locale,
   children,
 }: {
-  eyebrow: string;
   title: string;
   updated: string;
   region: Region;
+  locale: Locale;
   children: ReactNode;
 }) {
+  const t = getDictionary(locale).legal;
+
   return (
     <article className="pb-24">
       <header className={`${containerClass} pt-16 pb-2`}>
         <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
-          {eyebrow}
+          {t.eyebrow}
         </span>
         <h1 className="mt-3 text-balance text-[clamp(1.5rem,0.9rem+2.5vw,2.25rem)] font-semibold tracking-tight">
           {title}
         </h1>
-        <p className="mt-3 text-sm text-ink-faint">Ultima actualizare: {updated}</p>
+        <p className="mt-3 text-sm text-ink-faint">
+          {t.updatedLabel} {updated}
+        </p>
       </header>
 
       <div className={`${containerClass} mt-8`}>
-        <DraftNotice />
+        <DraftNotice locale={locale} />
       </div>
 
       <div className={`${containerClass} mt-5`}>
-        <CrisisNotice region={region} />
+        <CrisisNotice region={region} locale={locale} />
       </div>
 
       <div
@@ -62,32 +68,26 @@ export function LegalPage({
   );
 }
 
-function DraftNotice() {
+function DraftNotice({ locale }: { locale: Locale }) {
+  const t = getDictionary(locale).legal;
   return (
     <div className="rounded-2xl border border-line bg-surface p-5 text-sm leading-relaxed text-ink-soft">
-      <strong className="text-ink">Document în lucru</strong> — în așteptarea
-      revizuirii juridice finale. Conținutul de mai jos reflectă intenția
-      curentă a SPOCOI și poate fi modificat înainte de lansarea publică a
-      serviciului.
+      <strong className="text-ink">{t.draftNoticeStrong}</strong> {t.draftNoticeBody}
     </div>
   );
 }
 
-function CrisisNotice({ region }: { region: Region }) {
+function CrisisNotice({ region, locale }: { region: Region; locale: Locale }) {
+  const t = getDictionary(locale).legal;
   const resources = getCrisisResources(region);
 
   return (
     <div className="rounded-2xl border-2 border-ink/70 bg-surface p-6 text-sm leading-relaxed text-ink-soft">
-      <p className="font-semibold text-ink">
-        Dacă ai gânduri de suicid, de auto-vătămare sau de a răni pe altcineva
-      </p>
-      <p className="mt-2">
-        Oprește-te din conversația cu AI-ul și caută imediat ajutor real. SPOCOI
-        nu este un serviciu de urgență și nu poate interveni într-o criză.
-      </p>
+      <p className="font-semibold text-ink">{t.crisisTitle}</p>
+      <p className="mt-2">{t.crisisBody}</p>
       <ul className="mt-3 space-y-1">
         <li>
-          <strong className="text-ink">Servicii de urgență:</strong> {resources.emergency}
+          <strong className="text-ink">{t.emergencyLabel}</strong> {resources.emergency}
         </li>
         {resources.lines.map((line) => (
           <li key={line.label}>
@@ -96,11 +96,7 @@ function CrisisNotice({ region }: { region: Region }) {
         ))}
       </ul>
       {resources.note && <p className="mt-3">{resources.note}</p>}
-      <p className="mt-3 text-ink-faint">
-        Dacă numărul de mai sus nu funcționează acolo unde ești, sună la
-        numărul local de urgență sau mergi la cea mai apropiată unitate
-        medicală.
-      </p>
+      <p className="mt-3 text-ink-faint">{t.crisisFallback}</p>
     </div>
   );
 }
