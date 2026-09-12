@@ -64,11 +64,11 @@ export default function Home() {
 
       <section id="features" className="border-y border-line bg-surface/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
-          <div className="mb-12 max-w-2xl">
+          <div className="mb-12">
             <span className="text-xs font-medium uppercase tracking-wide text-brand-deep">
               Ce faci pe spocoi
             </span>
-            <h2 className="mt-3 text-balance text-[clamp(1.5rem,0.9rem+2.5vw,2.25rem)] font-semibold tracking-tight">
+            <h2 className="mt-3 text-balance text-[clamp(1.5rem,0.6rem+2.2vw,2.25rem)] font-semibold tracking-tight">
               Nu e un chatbot generic. E gândit pentru momentele grele.
             </h2>
           </div>
