@@ -99,9 +99,19 @@ export default async function ChatPage({
               <form action={signOutWithLocale}>
                 <button
                   type="submit"
-                  className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
+                  aria-label={tAuth.signOutButton}
+                  className="flex h-8 items-center justify-center rounded-full border border-line px-2 text-xs font-medium text-ink-soft hover:text-ink sm:px-3 sm:py-1.5"
                 >
-                  {tAuth.signOutButton}
+                  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4 sm:hidden" aria-hidden="true">
+                    <path
+                      d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M16 16l4-4-4-4M20 12H9"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span className="hidden sm:inline">{tAuth.signOutButton}</span>
                 </button>
               </form>
               <ThemeToggle />
