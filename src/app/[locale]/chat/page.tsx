@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LogoMark } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
+import { createClient } from "@/lib/supabase/server";
+import { signOut } from "@/app/actions/auth";
 
 export async function generateMetadata({
   params,
@@ -24,6 +27,18 @@ export default async function ChatPreviewPage({
   const { locale: rawLocale } = await params;
   const locale: Locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
   const t = getDictionary(locale).chat;
+  const tAuth = getDictionary(locale).auth;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(localizedHref("/login", locale));
+  }
+
+  const signOutWithLocale = signOut.bind(null, locale);
 
   return (
     <div
@@ -48,7 +63,18 @@ export default async function ChatPreviewPage({
               </span>
             </span>
           </Link>
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            <span className="hidden text-xs text-ink-faint sm:inline">{user.email}</span>
+            <form action={signOutWithLocale}>
+              <button
+                type="submit"
+                className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
+              >
+                {tAuth.signOutButton}
+              </button>
+            </form>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

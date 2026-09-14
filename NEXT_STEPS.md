@@ -12,10 +12,10 @@
 - [ ] Verifică/actualizează link-urile sociale din footer (Instagram/TikTok) — sunt presupuse (`spocoi`), nu confirmate ca fiind conturile reale
 - [ ] Trecere completă, pagină cu pagină, prin toate cele 6 rute în ambele teme + mobil (am verificat punctual, nu exhaustiv)
 - [x] i18n real — română (implicit, fără prefix) + engleză (`/en`), rutare pe `src/app/[locale]`, dicționar central în `src/i18n/dictionaries.ts`, switch de limbă în navbar. Franceză/spaniolă rămân candidați "probabil", neconfirmați ferm — nu construim infrastructura pentru ele până nu se confirmă. Rusă exclusă explicit (12 septembrie 2026) — nu o adăuga fără o discuție nouă. Traducerea EN a fost generată de Claude — încă nu a fost verificată de un vorbitor nativ de engleză, vezi nota din CLAUDE.md.
-- [ ] Waitlist conectat la o bază de date reală (Supabase, Frankfurt) în loc de formularul placeholder
+- [x] Waitlist conectat la o bază de date reală (Supabase, Frankfurt) — `src/app/actions/waitlist.ts`, tabela `waitlist_signups`, testat live (înscriere nouă + caz de duplicat)
 - [ ] Deploy pe Vercel + domeniu
 
-## Faza 2 — aplicația de chat (neînceput, doar discutat — nimic codat încă)
+## Faza 2 — aplicația de chat (începută — schema + autentificare gata, restul discutat)
 
 Mult mai mare decât site-ul de prezentare — decizii de produs/arhitectură stabilite în discuție (14 septembrie 2026), înainte să se scrie cod:
 
@@ -67,10 +67,20 @@ Vezi tabelul de preț/cost din `CLAUDE.md`. Pe scurt: **vocea reprezintă 80-95%
 - SIMPLU / PLUS / AVANSAT → **un singur model de text (Claude Haiku)** pentru toate trei, pentru ton consistent — planul vechi de rutare pe două providere diferite (OpenAI/Anthropic, în funcție de tier) a fost abandonat.
 - Voce: GPT-4o-mini Realtime (SIMPLU/PLUS), ElevenLabs Flash (AVANSAT) — neschimbat.
 
+### Autentificare — construită și testată (14 septembrie 2026)
+
+Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută în cookies, reîmprospătată din `proxy.ts` la fiecare cerere care trece prin matcher).
+
+- `/login`, `/signup` — rută separată `(auth)`, fără navbar/footer de marketing, shell minimal (logo + card centrat)
+- `/chat` e acum protejat real — redirect la `/login` dacă nu ești autentificat; header-ul arată emailul contului și un buton de ieșire din cont
+- Trigger Postgres (`handle_new_user`, migrarea `20260914155808_profile_on_signup.sql`) creează automat un rând `profiles` la fiecare cont nou, indiferent de client
+- Testat end-to-end: înregistrare → sesiune activă → `/chat` accesibil → ieșire din cont → `/chat` cere din nou login → autentificare cu același cont funcționează
+- **⚠️ Important, de rezolvat înainte de lansarea reală**: "Confirm email" e **dezactivat temporar** în Supabase (Authentication → Sign In / Providers) — planul gratuit are un SMTP de test cu limită foarte mică de emailuri/oră, care bloca testarea. Codul din `src/app/actions/auth.ts` tratează deja corect ambele cazuri (cu/fără confirmare), dar înainte de lansare trebuie fie reactivat "Confirm email" + configurat SMTP propriu (recomandat, altfel utilizatorii nu pot primi email de confirmare/resetare parolă), fie acceptat conștient riscul de conturi cu emailuri neverificate
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
-- Autentificare (email + parolă) — Supabase Auth
-- Migrare SQL pentru schema de mai sus + politici RLS
+- [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
+- [x] Autentificare (email + parolă) — vezi secțiunea de mai sus
 - Job zilnic de ștergere mesaje >30 zile
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
 - Detectare de bază pentru semnale de criză
