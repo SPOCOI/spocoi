@@ -96,6 +96,8 @@ export default async function ChatPage({
         inputPlaceholder={t.inputPlaceholder}
         sendLabel={t.sendLabel}
         micLabel={t.micLabel}
+        rateLimitedBurst={t.rateLimitedBurst}
+        rateLimitedDaily={t.rateLimitedDaily}
       />
     </div>
   );

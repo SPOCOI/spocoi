@@ -134,6 +134,8 @@ export const dictionaries = {
       sendLabel: "Trimite",
       micLabel: "Vorbește",
       emptyState: "Scrie primul mesaj ca să începi conversația.",
+      rateLimitedBurst: "Mergem puțin prea repede — așteaptă câteva clipe și încearcă din nou.",
+      rateLimitedDaily: "Ai atins limita de mesaje pentru azi. Revino mâine, sau alege un plan cu mai multe conversații.",
     },
     auth: {
       signInMetaTitle: "Autentificare — spocoi",
@@ -290,6 +292,8 @@ export const dictionaries = {
       sendLabel: "Send",
       micLabel: "Speak",
       emptyState: "Write your first message to start the conversation.",
+      rateLimitedBurst: "Let's slow down a little — wait a few seconds and try again.",
+      rateLimitedDaily: "You've hit today's message limit. Come back tomorrow, or pick a plan with more conversations.",
     },
     auth: {
       signInMetaTitle: "Sign in — spocoi",

@@ -19,6 +19,8 @@ export function ChatConversation({
   inputPlaceholder,
   sendLabel,
   micLabel,
+  rateLimitedBurst,
+  rateLimitedDaily,
 }: {
   conversationId: string;
   initialMessages: ChatMessage[];
@@ -27,10 +29,13 @@ export function ChatConversation({
   inputPlaceholder: string;
   sendLabel: string;
   micLabel: string;
+  rateLimitedBurst: string;
+  rateLimitedDaily: string;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,11 +44,15 @@ export function ChatConversation({
 
     setSending(true);
     setDraft("");
+    setNotice(null);
     const result = await sendMessage(conversationId, text, locale);
     setSending(false);
 
     if (result.status === "ok") {
       setMessages((prev) => [...prev, result.userMessage, result.assistantMessage]);
+    } else if (result.status === "rate-limited") {
+      setNotice(result.reason === "burst" ? rateLimitedBurst : rateLimitedDaily);
+      setDraft(text);
     } else {
       setDraft(text);
     }
@@ -90,6 +99,9 @@ export function ChatConversation({
         className="sticky bottom-0 border-t border-line/60 px-5 py-4"
         style={{ background: "color-mix(in srgb, var(--chat-bg) 92%, transparent)" }}
       >
+        {notice && (
+          <p className="mx-auto mb-3 max-w-2xl text-center text-xs text-ink-faint">{notice}</p>
+        )}
         <form onSubmit={handleSubmit} className="mx-auto flex max-w-2xl items-center gap-2.5">
           <div
             className="flex flex-1 items-center rounded-full border border-line px-4 py-3"

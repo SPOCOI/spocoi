@@ -96,7 +96,17 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 - `profiles.region` se completează acum la înregistrare (din header-ul de geo-detecție deja existent), ca detectarea de criză să arate resursele regiunii corecte — înainte rămânea `null`
 - **Bug prins și rezolvat**: textul cu paragrafe (`\n\n`) al răspunsului de criză nu se afișa cu linii separate — rezolvat cu `whitespace-pre-line` în `ChatConversation.tsx`
 - Testat end-to-end, în ambele limbi: conversație normală (răspuns cald, contextual), semnal de criză (răspuns fix, cu resurse, fără AI), schimbare de limbă UI mid-conversație (răspunde corect în limba curentă a UI-ului)
-- **Notă**: costul per conversație nu e încă limitat/monitorizat (fără cap pe număr de mesaje sau tokeni) — de adăugat înainte de a expune publicului larg, ca să nu explodeze costul pe un cont abuzat
+
+### Limitare de cost — construită și testată (14 septembrie 2026)
+
+`src/lib/rate-limit.ts`, verificat în `sendMessage()` înainte de orice scriere în bază sau apel AI:
+
+- **Limită de rafală** (toate tier-urile): max 10 mesaje/minut — protecție pură împotriva abuzului/bot-urilor, nu ține de cost per tier
+- **Limită zilnică per tier**: FREE = 30 mesaje/zi (exact numărul deja asumat în modelul financiar — nu o cifră inventată), SIMPLU/PLUS/AVANSAT = 150/400/1000 (valori provizorii, generoase — nimeni nu e încă pe ele fără Stripe, de revizuit când există abonamente reale)
+- Când o limită e atinsă: **nu se scrie nimic în bază, nu se apelează AI-ul** — utilizatorul vede o notificare discretă deasupra casetei de input (nu ca mesaj de chat), textul rămâne în casetă ca să poată reîncerca
+- Testat live: coborâtă temporar limita de rafală la 2 pentru verificare rapidă (al 3-lea mesaj a fost blocat corect, cu notificarea corectă), apoi repusă la 10
+
+**Rămâne de făcut, separat**: rate-limiting la nivel de IP/dispozitiv (pentru abuz înainte de a avea cont), și un cap pe tokeni/cost per apel AI (acum doar `max_tokens: 400` pe răspuns, fără monitorizare agregată a costului real cheltuit).
 
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
@@ -104,6 +114,7 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 - [x] Autentificare (email + parolă) — vezi secțiunea de mai sus
 - [x] `conversations` + `messages` conectate real la utilizator — vezi secțiunea de mai sus
 - [x] AI răspunde real (Claude Haiku) + detectare de bază pentru criză — vezi secțiunea de mai sus
+- [x] Limitare de cost (rafală + cap zilnic per tier) — vezi secțiunea de mai sus
 - Job zilnic de ștergere mesaje >30 zile
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
 - Detectare de bază pentru semnale de criză

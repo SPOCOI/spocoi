@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { generateAssistantReply } from "@/lib/ai/reply";
 import { containsCrisisSignal, buildCrisisReply } from "@/lib/crisis-detection";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { resolveRegion, type Region } from "@/lib/region";
 import type { Locale } from "@/i18n/config";
 
@@ -71,6 +72,7 @@ export async function listMessages(conversationId: string): Promise<ChatMessage[
 
 export type SendMessageResult =
   | { status: "ok"; userMessage: ChatMessage; assistantMessage: ChatMessage }
+  | { status: "rate-limited"; reason: "burst" | "daily" }
   | { status: "error" };
 
 export async function sendMessage(
@@ -86,6 +88,19 @@ export async function sendMessage(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { status: "error" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tier, region")
+    .eq("id", user.id)
+    .single();
+  const tier = profile?.tier ?? "free";
+  const region = (profile?.region as Region | null) ?? resolveRegion(undefined);
+
+  const rateLimit = await checkRateLimit(supabase, user.id, tier);
+  if (rateLimit.limited) {
+    return { status: "rate-limited", reason: rateLimit.reason };
+  }
 
   const { data: userMessage, error: insertError } = await supabase
     .from("messages")
@@ -104,7 +119,7 @@ export async function sendMessage(
     return { status: "error" };
   }
 
-  const replyText = await getReplyText(supabase, user.id, conversationId, trimmed, locale);
+  const replyText = await getReplyText(conversationId, trimmed, region, locale);
 
   const { data: assistantMessage, error: replyError } = await supabase
     .from("messages")
@@ -131,19 +146,12 @@ export async function sendMessage(
 }
 
 async function getReplyText(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string,
   conversationId: string,
   latestUserText: string,
+  region: Region,
   locale: Locale,
 ): Promise<string> {
   if (containsCrisisSignal(latestUserText)) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("region")
-      .eq("id", userId)
-      .single();
-    const region = (profile?.region as Region | null) ?? resolveRegion(undefined);
     return buildCrisisReply(region, locale);
   }
 
