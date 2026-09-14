@@ -136,7 +136,7 @@ Design iterat mai întâi prin mockup-uri (vezi discuția), apoi implementat rea
 - [x] AI răspunde real (Claude Haiku) + detectare de bază pentru criză — vezi secțiunea de mai sus
 - [x] Limitare de cost (rafală + cap zilnic per tier) — vezi secțiunea de mai sus
 - [x] Pagina de cont (`/account`) + check-in zilnic/luna în header — vezi secțiunile de mai sus
-- Job zilnic de ștergere mesaje >30 zile
+- [x] Job zilnic de ștergere mesaje >30 zile — `pg_cron`, migrarea `20260914175313_message_retention_job.sql`, job `delete-old-messages` rulează zilnic la 03:00 UTC. Testat direct: inserat un mesaj cu dată de acum 35 zile alături de unul recent, rulată comanda exactă din job → doar cel vechi a fost șters, cel recent (+ răspunsul AI) au rămas intacte. Șterge doar `messages`, nu și rândul din `conversations` (promisiunea din Privacy Policy vizează conținutul conversației, nu metadatele)
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
 - Integrare Stripe (checkout + webhook pentru `subscriptions`)
 - Voce reală (GPT-4o-mini Realtime / ElevenLabs) — acum doar text
