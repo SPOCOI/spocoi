@@ -1,7 +1,9 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
+import { REGION_HEADER, resolveRegion, type Region } from "@/lib/region";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: rawLocale } = await params;
@@ -19,6 +21,9 @@ export default async function WaitlistPage({
   const locale: Locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
   const t = getDictionary(locale).waitlist;
 
+  const headersList = await headers();
+  const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
+
   return (
     <>
       <section className="mx-auto max-w-3xl px-5 pb-14 pt-20 text-center md:pt-28">
@@ -31,7 +36,7 @@ export default async function WaitlistPage({
         <p className="mx-auto mt-5 max-w-xl text-balance text-lg text-ink-soft">{t.sub}</p>
 
         <div className="mx-auto mt-9 max-w-md">
-          <WaitlistForm locale={locale} />
+          <WaitlistForm locale={locale} region={region} />
           <p className="mt-4 text-xs text-ink-faint">{t.formHint}</p>
         </div>
       </section>

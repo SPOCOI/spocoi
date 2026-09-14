@@ -3,34 +3,36 @@
 import { useState } from "react";
 import { getDictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/config";
+import type { Region } from "@/lib/region";
+import { joinWaitlist } from "@/app/actions/waitlist";
 
-export function WaitlistForm({ locale }: { locale: Locale }) {
+export function WaitlistForm({ locale, region }: { locale: Locale; region: Region }) {
   const t = getDictionary(locale).waitlist;
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "submitting" | "done">(
+  const [status, setStatus] = useState<"idle" | "submitting" | "done" | "already" | "error">(
     "idle",
   );
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
 
     setStatus("submitting");
+    const result = await joinWaitlist(email, region, locale);
 
-    // TODO(backend): momentan nu există niciun API/Supabase conectat.
-    // Când se conectează, aici va veni apelul real de forma:
-    //   await supabase.from("waitlist").insert({ email });
-    // și tratarea erorilor înainte de a marca formularul ca "done".
-    setTimeout(() => {
-      setStatus("done");
-    }, 400);
+    if (result.status === "ok") setStatus("done");
+    else if (result.status === "already") setStatus("already");
+    else setStatus("error");
   }
 
-  if (status === "done") {
+  if (status === "done" || status === "already") {
+    const isAlready = status === "already";
     return (
       <div className="rounded-2xl border border-line bg-surface p-6 text-center">
-        <p className="font-semibold">{t.successTitle}</p>
-        <p className="mt-1.5 text-sm text-ink-soft">{t.successBody(email)}</p>
+        <p className="font-semibold">{isAlready ? t.alreadyTitle : t.successTitle}</p>
+        <p className="mt-1.5 text-sm text-ink-soft">
+          {isAlready ? t.alreadyBody(email) : t.successBody(email)}
+        </p>
       </div>
     );
   }
@@ -59,6 +61,11 @@ export function WaitlistForm({ locale }: { locale: Locale }) {
       >
         {status === "submitting" ? t.formSubmitting : t.formSubmit}
       </button>
+      {status === "error" && (
+        <p className="text-sm text-red-600 sm:basis-full" role="alert">
+          {t.errorBody}
+        </p>
+      )}
     </form>
   );
 }

@@ -98,6 +98,9 @@ export const dictionaries = {
       formHint: "Nu trimitem spam. Doar te anunțăm când e rândul tău.",
       successTitle: "Mulțumim, te contactăm la lansare.",
       successBody: (email: string) => `Ai fost adăugat pe waitlist la adresa ${email}.`,
+      alreadyTitle: "Ești deja pe listă.",
+      alreadyBody: (email: string) => `Adresa ${email} e deja înscrisă pe waitlist — te contactăm la lansare.`,
+      errorBody: "Ceva n-a mers bine. Mai încearcă o dată, sau scrie-ne la support@spocoi.co.",
       tiers: [
         { name: "Fondator", range: "primii 100", body: "Primul grup de oameni care intră pe waitlist. Acces printre primii la lansare și șansa să ne spui direct ce funcționează și ce nu, cât încă construim produsul." },
         { name: "Pioneer", range: "locurile 101–500", body: "Acces prioritar la lansare, imediat după grupul Fondator — printre primii care încearcă spocoi înainte de publicul larg." },
@@ -251,6 +254,9 @@ export const dictionaries = {
       formHint: "We don't send spam. We'll only reach out when it's your turn.",
       successTitle: "Thanks, we'll be in touch at launch.",
       successBody: (email: string) => `You've been added to the waitlist at ${email}.`,
+      alreadyTitle: "You're already on the list.",
+      alreadyBody: (email: string) => `${email} is already on the waitlist — we'll be in touch at launch.`,
+      errorBody: "Something went wrong. Try again, or write to us at support@spocoi.co.",
       tiers: [
         { name: "Founder", range: "first 100", body: "The first group of people to join the waitlist. Among the first to get access at launch, with the chance to tell us directly what's working and what isn't while we're still building the product." },
         { name: "Pioneer", range: "spots 101–500", body: "Priority access at launch, right after the Founder group — among the first to try spocoi before the general public." },
