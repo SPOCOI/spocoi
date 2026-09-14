@@ -3,10 +3,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoMark } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ChatConversation } from "@/components/ChatConversation";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
+import { getActiveConversation, listMessages } from "@/app/actions/conversations";
 
 export async function generateMetadata({
   params,
@@ -19,7 +21,7 @@ export async function generateMetadata({
   return { title: t.metaTitle, robots: { index: false, follow: false } };
 }
 
-export default async function ChatPreviewPage({
+export default async function ChatPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -39,6 +41,8 @@ export default async function ChatPreviewPage({
   }
 
   const signOutWithLocale = signOut.bind(null, locale);
+  const conversationId = await getActiveConversation();
+  const messages = await listMessages(conversationId);
 
   return (
     <div
@@ -84,64 +88,15 @@ export default async function ChatPreviewPage({
         </span>
       </div>
 
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 py-6">
-        {t.messages.map((m, i) =>
-          m.role === "user" ? (
-            <div key={i} className="flex flex-col items-end gap-1.5">
-              <div
-                className="max-w-[80%] rounded-2xl rounded-br-sm border border-line px-4 py-2.5 text-[15px] leading-relaxed text-ink"
-                style={{ background: "var(--chat-surface)" }}
-              >
-                {m.text}
-              </div>
-              <span className="pr-1 text-xs text-ink-faint">{m.time}</span>
-            </div>
-          ) : (
-            <div key={i} className="flex flex-col gap-1.5">
-              <p className="max-w-[85%] text-[15px] leading-relaxed text-ink-soft">{m.text}</p>
-              <span className="text-xs text-ink-faint">{m.time}</span>
-            </div>
-          ),
-        )}
-      </main>
-
-      <footer
-        className="sticky bottom-0 border-t border-line/60 px-5 py-4"
-        style={{ background: "color-mix(in srgb, var(--chat-bg) 92%, transparent)" }}
-      >
-        <div className="mx-auto flex max-w-2xl items-center gap-2.5">
-          <div
-            className="flex flex-1 items-center rounded-full border border-line px-4 py-3"
-            style={{ background: "var(--chat-surface)" }}
-          >
-            <input
-              type="text"
-              placeholder={t.inputPlaceholder}
-              className="w-full bg-transparent text-sm text-ink placeholder:text-ink-faint focus:outline-none"
-              readOnly
-            />
-          </div>
-          <button
-            type="button"
-            aria-label={t.micLabel}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-ink transition-transform hover:scale-105"
-          >
-            <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5" aria-hidden="true">
-              <path
-                d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-              />
-              <path
-                d="M6.5 11.5v.5a5.5 5.5 0 0 0 11 0v-.5M12 17.5V21"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
-        </div>
-      </footer>
+      <ChatConversation
+        conversationId={conversationId}
+        initialMessages={messages}
+        locale={locale}
+        emptyState={t.emptyState}
+        inputPlaceholder={t.inputPlaceholder}
+        sendLabel={t.sendLabel}
+        micLabel={t.micLabel}
+      />
     </div>
   );
 }

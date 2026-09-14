@@ -77,10 +77,20 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 - Testat end-to-end: înregistrare → sesiune activă → `/chat` accesibil → ieșire din cont → `/chat` cere din nou login → autentificare cu același cont funcționează
 - **⚠️ Important, de rezolvat înainte de lansarea reală**: "Confirm email" e **dezactivat temporar** în Supabase (Authentication → Sign In / Providers) — planul gratuit are un SMTP de test cu limită foarte mică de emailuri/oră, care bloca testarea. Codul din `src/app/actions/auth.ts` tratează deja corect ambele cazuri (cu/fără confirmare), dar înainte de lansare trebuie fie reactivat "Confirm email" + configurat SMTP propriu (recomandat, altfel utilizatorii nu pot primi email de confirmare/resetare parolă), fie acceptat conștient riscul de conturi cu emailuri neverificate
 
+### Conversații & mesaje reale — construite și testate (14 septembrie 2026)
+
+`/chat` citește/scrie acum din `conversations`/`messages` reale, per utilizator autentificat (`src/app/actions/conversations.ts`, componenta client `ChatConversation.tsx`) — nu mai e doar design static. Fără răspuns AI încă (asta rămâne o integrare separată, vezi mai jos) — badge-ul din pagină spune explicit asta.
+
+- `getActiveConversation()` — găsește conversația deschisă a utilizatorului sau creează una nouă
+- `sendMessage()` — scrie mesajul utilizatorului, întors imediat în UI (fără reîncărcare)
+- **Bug prins și rezolvat pe loc**: două cereri concurente la prima încărcare a `/chat` puteau crea fiecare câte o conversație "deschisă" pentru același utilizator — la reîncărcare, se alegea uneori cea goală, nu cea cu mesaje. Rezolvat cu un index unic la nivel de bază de date (`conversations_one_open_per_user`, migrarea `20260914162520_one_open_conversation.sql`), plus tratarea coliziunii în cod (re-citește conversația câștigătoare în loc să eșueze)
+- Testat: mesaje multiple, ordine corectă, persistă corect după reîncărcări repetate
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
 - [x] Autentificare (email + parolă) — vezi secțiunea de mai sus
+- [x] `conversations` + `messages` conectate real la utilizator — vezi secțiunea de mai sus
 - Job zilnic de ștergere mesaje >30 zile
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
 - Detectare de bază pentru semnale de criză

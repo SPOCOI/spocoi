@@ -127,35 +127,13 @@ export const dictionaries = {
     },
     chat: {
       metaTitle: "Conversație — spocoi",
-      previewBadge: "Previzualizare — designul aplicației de chat, în lucru",
+      previewBadge: "În lucru — mesajele tale se salvează, dar AI-ul încă nu răspunde",
       backLabel: "spocoi",
       statusListening: "ascultă",
       inputPlaceholder: "Scrie ce simți...",
       sendLabel: "Trimite",
       micLabel: "Vorbește",
-      messages: [
-        { role: "user" as const, text: "Nu știu, azi a fost o zi grea.", time: "14:02" },
-        {
-          role: "ai" as const,
-          text: "Îmi pare rău că a fost o zi grea. Vrei să-mi spui ce s-a întâmplat, sau preferi doar să vorbim despre altceva o vreme?",
-          time: "14:02",
-        },
-        {
-          role: "user" as const,
-          text: "Cred că vreau doar să vorbesc. Simt că nimeni nu mă ascultă cu adevărat.",
-          time: "14:04",
-        },
-        {
-          role: "ai" as const,
-          text: "Sunt aici, și te ascult. Nu trebuie să găsești soluții acum — poți doar să spui ce simți, în ritmul tău.",
-          time: "14:04",
-        },
-        {
-          role: "user" as const,
-          text: "Mulțumesc. E ciudat cât de mult ajută să spun asta cu voce tare.",
-          time: "14:06",
-        },
-      ],
+      emptyState: "Scrie primul mesaj ca să începi conversația.",
     },
     auth: {
       signInMetaTitle: "Autentificare — spocoi",
@@ -305,35 +283,13 @@ export const dictionaries = {
     },
     chat: {
       metaTitle: "Conversation — spocoi",
-      previewBadge: "Preview — chat app design, work in progress",
+      previewBadge: "Work in progress — your messages are saved, but the AI doesn't reply yet",
       backLabel: "spocoi",
       statusListening: "listening",
       inputPlaceholder: "Write what you're feeling...",
       sendLabel: "Send",
       micLabel: "Speak",
-      messages: [
-        { role: "user" as const, text: "I don't know, today was a hard day.", time: "14:02" },
-        {
-          role: "ai" as const,
-          text: "I'm sorry today was hard. Do you want to tell me what happened, or would you rather just talk about something else for a while?",
-          time: "14:02",
-        },
-        {
-          role: "user" as const,
-          text: "I think I just want to talk. It feels like no one really listens to me.",
-          time: "14:04",
-        },
-        {
-          role: "ai" as const,
-          text: "I'm here, and I'm listening. You don't have to find solutions right now — you can just say how you feel, at your own pace.",
-          time: "14:04",
-        },
-        {
-          role: "user" as const,
-          text: "Thank you. It's strange how much it helps to say that out loud.",
-          time: "14:06",
-        },
-      ],
+      emptyState: "Write your first message to start the conversation.",
     },
     auth: {
       signInMetaTitle: "Sign in — spocoi",
