@@ -136,6 +136,17 @@ Design iterat mai întâi prin mockup-uri (vezi discuția), apoi implementat rea
 - Schema: `profiles.mood_phase` (0-6) + tabela `mood_checkins` (unique per user/zi) — migrarea `20260914172712_mood_checkins.sql`
 - Testat live: check-in real → luna trece de la fază 0 la 1, eticheta devine "în creștere", cardul dispare corect
 
+### Verificare exhaustivă front-end — toate rutele, ambele teme, mobil+desktop (14 septembrie 2026)
+
+La cererea lui Daniel, înainte de a trece mai departe la logică/backend. Găsite și reparate 4 bug-uri reale:
+
+- **Header `/chat` cramponat pe mobil**: butonul de sign-out își rupea textul pe două linii sub `sm`, forțând și linia de stare a lunii să se rupă. Reparat cu buton doar-iconiță sub `sm` (`src/app/[locale]/chat/page.tsx`).
+- **Tema salvată nu se aplica la un load nou al paginii**: `ThemeToggle.tsx` actualiza starea React din `localStorage` la montare, dar nu apela niciodată `applyTheme()` acolo (doar din `toggle()`) — deci tema salvată se vedea doar după un toggle live, nu la un refresh/link nou. Reparat + adăugat un `<script>` blocant în `<head>`-ul din `layout.tsx` ca să nu mai existe flash de temă greșită înainte de hidratare, plus `suppressHydrationWarning` pe `<html>`.
+- **Textele de criză (`crisis.ts`) ignorau locale-ul**: etichetele liniilor de sprijin și nota de fallback pentru Moldova erau hardcodate în română, indiferent de limba site-ului — vizibil pe paginile legale în engleză, dar și în răspunsul real de criză din chat (`buildCrisisReply`) pentru un utilizator care scrie în engleză. Reparat: `getCrisisResources()` ia acum și `locale`, cu variante RO/EN pentru fiecare string.
+- **Data "ultima actualizare" de pe paginile legale** era hardcodată în română ("12 septembrie 2026") pe ambele locale-uri. Reparat cu formatul EN corespunzător pe `/en`.
+
+Verificat fără probleme: homepage, pricing, waitlist, login, signup (toate — light+dark, desktop+mobil), `/account` (light+dark, mobil+desktop, inclusiv zona periculoasă), `/en` pentru toate paginile de mai sus, meniul mobil (hamburger).
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
