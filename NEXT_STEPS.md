@@ -108,6 +108,26 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 
 **Rămâne de făcut, separat**: rate-limiting la nivel de IP/dispozitiv (pentru abuz înainte de a avea cont), și un cap pe tokeni/cost per apel AI (acum doar `max_tokens: 400` pe răspuns, fără monitorizare agregată a costului real cheltuit).
 
+### Pagina de cont + "luna" (check-in zilnic) — construite și testate (14 septembrie 2026)
+
+Design iterat mai întâi prin mockup-uri (vezi discuția), apoi implementat real.
+
+**Pagina de cont** (`/account`, protejată, `src/app/[locale]/account/page.tsx`):
+- Date de bază (nume afișat, editabil), preferințe (limbă/temă — reutilizează `LanguageSwitch`/`ThemeToggle` existente)
+- Portret AI: toggle pentru `profiles.personalization_enabled` + listă de `memory_entries` cu ștergere individuală (lista e goală acum — pipeline-ul de extragere a portretului nu există încă, doar UI-ul de vizualizare/ștergere)
+- Abonament: tier curent (FREE) + link spre `/pricing`
+- Zonă periculoasă: reset istoric conversație (șterge `messages`+`conversations` pentru utilizator) și ștergere cont definitivă (prin `supabaseAdmin().auth.admin.deleteUser`, cascadează prin toate tabelele)
+- Link către `/account` adăugat în header-ul din `/chat` (iconiță de persoană)
+- **Testat live, inclusiv zona periculoasă**: am eliminat temporar `window.confirm()` (browser-ul automatizat nu poate accepta dialoguri native) doar cât să confirm că acțiunile chiar rulează — reset istoric confirmat în loguri, ștergere cont confirmată direct în Supabase (`user_count = 0` după ștergere) — apoi am repus confirmările reale în cod
+
+**"Luna" — check-in zilnic + indicator de stare în header** (ideea lui Daniel, dezvoltată prin mockup-uri):
+- Întrebare simplă, o dată pe zi, la prima deschidere a `/chat`: "Cum te simți azi, față de ieri?" — mai greu / la fel / mai bine (`src/components/MoodCheckin.tsx`)
+- Fără presiune pe zilele lipsă: dacă nu răspunzi, `profiles.mood_phase` rămâne neschimbat — nu scade doar pentru că ai lipsit o zi
+- Faza lunii (0-6, din `profiles.mood_phase`) desenată ca icon SVG cu două cercuri suprapuse (`src/components/MoonPhase.tsx`), cu "umbra" adaptată la tema curentă (`var(--chat-bg)`) — funcționează identic în light și dark
+- Header-ul din `/chat` arată luna + eticheta de tendință ("ascultă · în creștere"/"în scădere") — stare partajată între header și cardul de check-in printr-un context React (`MoodProvider.tsx`), fiindcă sunt în locuri diferite pe pagină
+- Schema: `profiles.mood_phase` (0-6) + tabela `mood_checkins` (unique per user/zi) — migrarea `20260914172712_mood_checkins.sql`
+- Testat live: check-in real → luna trece de la fază 0 la 1, eticheta devine "în creștere", cardul dispare corect
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
@@ -115,6 +135,7 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 - [x] `conversations` + `messages` conectate real la utilizator — vezi secțiunea de mai sus
 - [x] AI răspunde real (Claude Haiku) + detectare de bază pentru criză — vezi secțiunea de mai sus
 - [x] Limitare de cost (rafală + cap zilnic per tier) — vezi secțiunea de mai sus
+- [x] Pagina de cont (`/account`) + check-in zilnic/luna în header — vezi secțiunile de mai sus
 - Job zilnic de ștergere mesaje >30 zile
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
 - Detectare de bază pentru semnale de criză

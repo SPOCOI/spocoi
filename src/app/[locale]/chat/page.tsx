@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { LogoMark } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChatConversation } from "@/components/ChatConversation";
+import { MoodProvider } from "@/components/MoodProvider";
+import { MoodIndicator, MoodStatusLabel } from "@/components/MoodIndicator";
+import { MoodCheckin } from "@/components/MoodCheckin";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
 import { getActiveConversation, listMessages } from "@/app/actions/conversations";
+import { getMoodState, type MoodState } from "@/app/actions/mood";
 
 export async function generateMetadata({
   params,
@@ -30,6 +33,7 @@ export default async function ChatPage({
   const locale: Locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
   const t = getDictionary(locale).chat;
   const tAuth = getDictionary(locale).auth;
+  const tAccount = getDictionary(locale).account;
 
   const supabase = await createClient();
   const {
@@ -43,62 +47,95 @@ export default async function ChatPage({
   const signOutWithLocale = signOut.bind(null, locale);
   const conversationId = await getActiveConversation();
   const messages = await listMessages(conversationId);
+  const moodState: MoodState = (await getMoodState()) ?? {
+    phase: 0,
+    checkedInToday: true,
+    trend: null,
+  };
 
   return (
-    <div
-      className="chat-shell flex min-h-screen flex-col"
-      style={{ background: "var(--chat-bg)" }}
-    >
-      <header
-        className="sticky top-0 z-10 border-b border-line/60 backdrop-blur"
-        style={{ background: "color-mix(in srgb, var(--chat-bg) 88%, transparent)" }}
+    <MoodProvider initialState={moodState}>
+      <div
+        className="chat-shell flex min-h-screen flex-col"
+        style={{ background: "var(--chat-bg)" }}
       >
-        <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
-          <Link href={localizedHref("/", locale)} className="flex items-center gap-2.5">
-            <span className="relative flex h-8 w-8 shrink-0 items-center justify-center">
-              <span className="absolute inset-0 animate-pulse rounded-full bg-brand/25" />
-              <LogoMark className="h-5 w-5" />
-            </span>
-            <span className="flex flex-col leading-none">
-              <span className="text-sm font-semibold text-ink">{t.backLabel}</span>
-              <span className="mt-1 flex items-center gap-1.5 text-xs text-ink-faint">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                {t.statusListening}
+        <header
+          className="sticky top-0 z-10 border-b border-line/60 backdrop-blur"
+          style={{ background: "color-mix(in srgb, var(--chat-bg) 88%, transparent)" }}
+        >
+          <div className="mx-auto flex max-w-2xl items-center justify-between px-5 py-3">
+            <Link href={localizedHref("/", locale)} className="flex items-center gap-2.5">
+              <MoodIndicator
+                statusListening={t.statusListening}
+                trendBetter={t.moodTrendBetter}
+                trendWorse={t.moodTrendWorse}
+              />
+              <span className="flex flex-col leading-none">
+                <span className="text-sm font-semibold text-ink">{t.backLabel}</span>
+                <MoodStatusLabel
+                  statusListening={t.statusListening}
+                  trendBetter={t.moodTrendBetter}
+                  trendWorse={t.moodTrendWorse}
+                />
               </span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-ink-faint sm:inline">{user.email}</span>
-            <form action={signOutWithLocale}>
-              <button
-                type="submit"
-                className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
+            </Link>
+            <div className="flex items-center gap-3">
+              <span className="hidden text-xs text-ink-faint sm:inline">{user.email}</span>
+              <Link
+                href={localizedHref("/account", locale)}
+                aria-label={tAccount.title}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink-soft hover:text-ink"
               >
-                {tAuth.signOutButton}
-              </button>
-            </form>
-            <ThemeToggle />
+                <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+                  <circle cx="12" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.6" />
+                  <path
+                    d="M4.5 20c1.2-3.8 4.3-6 7.5-6s6.3 2.2 7.5 6"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </Link>
+              <form action={signOutWithLocale}>
+                <button
+                  type="submit"
+                  className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:text-ink"
+                >
+                  {tAuth.signOutButton}
+                </button>
+              </form>
+              <ThemeToggle />
+            </div>
           </div>
+        </header>
+
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-3 px-5 pt-4">
+          <span className="inline-block w-fit rounded-full border border-line px-3 py-1 text-xs text-ink-faint">
+            {t.previewBadge}
+          </span>
+          {!moodState.checkedInToday && (
+            <MoodCheckin
+              question={t.moodQuestion}
+              worseLabel={t.moodWorse}
+              sameLabel={t.moodSame}
+              betterLabel={t.moodBetter}
+              skipHint={t.moodSkip}
+            />
+          )}
         </div>
-      </header>
 
-      <div className="mx-auto w-full max-w-2xl px-5 pt-4">
-        <span className="inline-block rounded-full border border-line px-3 py-1 text-xs text-ink-faint">
-          {t.previewBadge}
-        </span>
+        <ChatConversation
+          conversationId={conversationId}
+          initialMessages={messages}
+          locale={locale}
+          emptyState={t.emptyState}
+          inputPlaceholder={t.inputPlaceholder}
+          sendLabel={t.sendLabel}
+          micLabel={t.micLabel}
+          rateLimitedBurst={t.rateLimitedBurst}
+          rateLimitedDaily={t.rateLimitedDaily}
+        />
       </div>
-
-      <ChatConversation
-        conversationId={conversationId}
-        initialMessages={messages}
-        locale={locale}
-        emptyState={t.emptyState}
-        inputPlaceholder={t.inputPlaceholder}
-        sendLabel={t.sendLabel}
-        micLabel={t.micLabel}
-        rateLimitedBurst={t.rateLimitedBurst}
-        rateLimitedDaily={t.rateLimitedDaily}
-      />
-    </div>
+    </MoodProvider>
   );
 }
