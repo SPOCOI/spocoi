@@ -49,7 +49,7 @@ export function containsCrisisSignal(text: string): boolean {
 }
 
 export function buildCrisisReply(region: Region, locale: Locale): string {
-  const resources = getCrisisResources(region);
+  const resources = getCrisisResources(region, locale);
   const lines = resources.lines.map((l) => `${l.label}: ${l.number}`).join("\n");
 
   if (locale === "en") {

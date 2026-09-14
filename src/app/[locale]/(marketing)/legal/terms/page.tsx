@@ -34,7 +34,7 @@ export default async function TermsPage({
       region={region}
       locale={locale}
       title={t.termsTitle}
-      updated="12 septembrie 2026"
+      updated={locale === "en" ? "September 12, 2026" : "12 septembrie 2026"}
     >
       {locale === "en" ? (
         <>

@@ -17,7 +17,7 @@ export default async function Home({
 
   const headersList = await headers();
   const region = (headersList.get(REGION_HEADER) as Region | null) ?? resolveRegion(undefined);
-  const crisis = getCrisisResources(region);
+  const crisis = getCrisisResources(region, locale);
   const crisisLine = crisis.lines[0];
 
   return (

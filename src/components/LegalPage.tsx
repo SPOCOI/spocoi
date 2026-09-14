@@ -79,7 +79,7 @@ function DraftNotice({ locale }: { locale: Locale }) {
 
 function CrisisNotice({ region, locale }: { region: Region; locale: Locale }) {
   const t = getDictionary(locale).legal;
-  const resources = getCrisisResources(region);
+  const resources = getCrisisResources(region, locale);
 
   return (
     <div className="rounded-2xl border-2 border-ink/70 bg-surface p-6 text-sm leading-relaxed text-ink-soft">
