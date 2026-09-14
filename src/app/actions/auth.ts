@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { localizedHref, type Locale } from "@/i18n/config";
+import { REGION_HEADER, resolveRegion } from "@/lib/region";
 
 export type AuthResult = { status: "ok" | "confirm-email" | "error"; message?: string };
 
@@ -39,7 +40,15 @@ export async function signUp(
   // With "Confirm email" off (current dev setting), signUp already returns
   // an active session — no confirmation step needed. With it on (required
   // before real launch), data.session is null until the user clicks the
-  // emailed link, which lands on /auth/confirm.
+  // emailed link, which lands on /auth/confirm. In that case the profile
+  // keeps region unset until the user's first session — a gap worth
+  // closing later (e.g. by setting it from /auth/confirm too).
+  if (data.session && data.user) {
+    const h = await headers();
+    const region = h.get(REGION_HEADER) ?? resolveRegion(undefined);
+    await supabase.from("profiles").update({ region }).eq("id", data.user.id);
+  }
+
   return data.session ? { status: "ok" } : { status: "confirm-email" };
 }
 

@@ -39,11 +39,11 @@ export function ChatConversation({
 
     setSending(true);
     setDraft("");
-    const result = await sendMessage(conversationId, text);
+    const result = await sendMessage(conversationId, text, locale);
     setSending(false);
 
     if (result.status === "ok") {
-      setMessages((prev) => [...prev, result.message]);
+      setMessages((prev) => [...prev, result.userMessage, result.assistantMessage]);
     } else {
       setDraft(text);
     }
@@ -70,12 +70,19 @@ export function ChatConversation({
             </div>
           ) : (
             <div key={m.id} className="flex flex-col gap-1.5">
-              <p className="max-w-[85%] text-[15px] leading-relaxed text-ink-soft">
+              <p className="max-w-[85%] whitespace-pre-line text-[15px] leading-relaxed text-ink-soft">
                 {m.content}
               </p>
               <span className="text-xs text-ink-faint">{formatTime(m.created_at, locale)}</span>
             </div>
           ),
+        )}
+        {sending && (
+          <div className="flex gap-1 py-1">
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-faint" />
+          </div>
         )}
       </main>
 

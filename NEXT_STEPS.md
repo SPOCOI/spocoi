@@ -79,18 +79,31 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 
 ### Conversații & mesaje reale — construite și testate (14 septembrie 2026)
 
-`/chat` citește/scrie acum din `conversations`/`messages` reale, per utilizator autentificat (`src/app/actions/conversations.ts`, componenta client `ChatConversation.tsx`) — nu mai e doar design static. Fără răspuns AI încă (asta rămâne o integrare separată, vezi mai jos) — badge-ul din pagină spune explicit asta.
+`/chat` citește/scrie acum din `conversations`/`messages` reale, per utilizator autentificat (`src/app/actions/conversations.ts`, componenta client `ChatConversation.tsx`) — nu mai e doar design static. (AI-ul chiar răspunde acum — vezi secțiunea următoare, adăugată în aceeași sesiune.)
 
 - `getActiveConversation()` — găsește conversația deschisă a utilizatorului sau creează una nouă
 - `sendMessage()` — scrie mesajul utilizatorului, întors imediat în UI (fără reîncărcare)
 - **Bug prins și rezolvat pe loc**: două cereri concurente la prima încărcare a `/chat` puteau crea fiecare câte o conversație "deschisă" pentru același utilizator — la reîncărcare, se alegea uneori cea goală, nu cea cu mesaje. Rezolvat cu un index unic la nivel de bază de date (`conversations_one_open_per_user`, migrarea `20260914162520_one_open_conversation.sql`), plus tratarea coliziunii în cod (re-citește conversația câștigătoare în loc să eșueze)
 - Testat: mesaje multiple, ordine corectă, persistă corect după reîncărcări repetate
 
+### AI-ul răspunde real — construit și testat (14 septembrie 2026)
+
+`/chat` folosește acum Claude Haiku (Anthropic) pentru răspunsuri reale, plus detectarea de bază pentru semnale de criză decisă mai devreme.
+
+- **Provider**: doar Anthropic deocamdată (decizie explicită) — toată lumea e pe tier FREE fără Stripe, deci rutarea FREE/plătit pe provider diferit (planificată în CLAUDE.md) rămâne pentru când există abonamente reale de diferențiat. Cheie separată, proiect/workspace Anthropic dedicat (`spocoi-chat-backend`), NU cheia folosită de agentul de marketing.
+- `src/lib/ai/reply.ts` — system prompt cu tonul de brand (matur, cald, NU Gen Z), separat RO/EN; trimite tot istoricul conversației la Claude, deci AI-ul chiar ține minte contextul (verificat: a recunoscut și a reacționat corect la un mesaj anterior de criză, într-un răspuns ulterior, fără să fie alarmist)
+- `src/lib/crisis-detection.ts` — cuvinte-cheie RO+EN (sinucidere, autovătămare etc.); dacă mesajul utilizatorului le conține, **sare peste apelul AI** și răspunde direct cu numerele de urgență din `getCrisisResources(region)` — testat, funcționează
+- `profiles.region` se completează acum la înregistrare (din header-ul de geo-detecție deja existent), ca detectarea de criză să arate resursele regiunii corecte — înainte rămânea `null`
+- **Bug prins și rezolvat**: textul cu paragrafe (`\n\n`) al răspunsului de criză nu se afișa cu linii separate — rezolvat cu `whitespace-pre-line` în `ChatConversation.tsx`
+- Testat end-to-end, în ambele limbi: conversație normală (răspuns cald, contextual), semnal de criză (răspuns fix, cu resurse, fără AI), schimbare de limbă UI mid-conversație (răspunde corect în limba curentă a UI-ului)
+- **Notă**: costul per conversație nu e încă limitat/monitorizat (fără cap pe număr de mesaje sau tokeni) — de adăugat înainte de a expune publicului larg, ca să nu explodeze costul pe un cont abuzat
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
 - [x] Autentificare (email + parolă) — vezi secțiunea de mai sus
 - [x] `conversations` + `messages` conectate real la utilizator — vezi secțiunea de mai sus
+- [x] AI răspunde real (Claude Haiku) + detectare de bază pentru criză — vezi secțiunea de mai sus
 - Job zilnic de ștergere mesaje >30 zile
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
 - Detectare de bază pentru semnale de criză

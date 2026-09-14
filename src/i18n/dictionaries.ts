@@ -127,7 +127,7 @@ export const dictionaries = {
     },
     chat: {
       metaTitle: "Conversație — spocoi",
-      previewBadge: "În lucru — mesajele tale se salvează, dar AI-ul încă nu răspunde",
+      previewBadge: "În lucru — răspunde doar prin text deocamdată, fără voce",
       backLabel: "spocoi",
       statusListening: "ascultă",
       inputPlaceholder: "Scrie ce simți...",
@@ -283,7 +283,7 @@ export const dictionaries = {
     },
     chat: {
       metaTitle: "Conversation — spocoi",
-      previewBadge: "Work in progress — your messages are saved, but the AI doesn't reply yet",
+      previewBadge: "Work in progress — text only for now, no voice yet",
       backLabel: "spocoi",
       statusListening: "listening",
       inputPlaceholder: "Write what you're feeling...",

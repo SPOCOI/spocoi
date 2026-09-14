@@ -1,6 +1,10 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { generateAssistantReply } from "@/lib/ai/reply";
+import { containsCrisisSignal, buildCrisisReply } from "@/lib/crisis-detection";
+import { resolveRegion, type Region } from "@/lib/region";
+import type { Locale } from "@/i18n/config";
 
 export type ChatMessage = {
   id: string;
@@ -66,12 +70,13 @@ export async function listMessages(conversationId: string): Promise<ChatMessage[
 }
 
 export type SendMessageResult =
-  | { status: "ok"; message: ChatMessage }
+  | { status: "ok"; userMessage: ChatMessage; assistantMessage: ChatMessage }
   | { status: "error" };
 
 export async function sendMessage(
   conversationId: string,
   content: string,
+  locale: Locale,
 ): Promise<SendMessageResult> {
   const trimmed = content.trim();
   if (!trimmed) return { status: "error" };
@@ -82,7 +87,7 @@ export async function sendMessage(
   } = await supabase.auth.getUser();
   if (!user) return { status: "error" };
 
-  const { data, error } = await supabase
+  const { data: userMessage, error: insertError } = await supabase
     .from("messages")
     .insert({
       conversation_id: conversationId,
@@ -94,10 +99,62 @@ export async function sendMessage(
     .select("id, role, modality, content, created_at")
     .single();
 
-  if (error) {
-    console.error("sendMessage failed:", error);
+  if (insertError) {
+    console.error("sendMessage (user insert) failed:", insertError);
     return { status: "error" };
   }
 
-  return { status: "ok", message: data as ChatMessage };
+  const replyText = await getReplyText(supabase, user.id, conversationId, trimmed, locale);
+
+  const { data: assistantMessage, error: replyError } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      user_id: user.id,
+      role: "assistant",
+      modality: "text",
+      content: replyText,
+    })
+    .select("id, role, modality, content, created_at")
+    .single();
+
+  if (replyError) {
+    console.error("sendMessage (assistant insert) failed:", replyError);
+    return { status: "error" };
+  }
+
+  return {
+    status: "ok",
+    userMessage: userMessage as ChatMessage,
+    assistantMessage: assistantMessage as ChatMessage,
+  };
+}
+
+async function getReplyText(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  conversationId: string,
+  latestUserText: string,
+  locale: Locale,
+): Promise<string> {
+  if (containsCrisisSignal(latestUserText)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("region")
+      .eq("id", userId)
+      .single();
+    const region = (profile?.region as Region | null) ?? resolveRegion(undefined);
+    return buildCrisisReply(region, locale);
+  }
+
+  const history = await listMessages(conversationId);
+
+  try {
+    return await generateAssistantReply(history, locale);
+  } catch (err) {
+    console.error("generateAssistantReply failed:", err);
+    return locale === "en"
+      ? "I'm having trouble connecting right now — please try again in a moment."
+      : "Am o problemă de conexiune chiar acum — te rog încearcă din nou peste puțin timp.";
+  }
 }
