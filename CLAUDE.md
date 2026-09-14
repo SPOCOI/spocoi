@@ -32,18 +32,24 @@ Structură reală: **SPOCOI OÜ** (Estonia, holding, în curs de înregistrare) 
 
 Freemium, geo-adaptiv (Moldova / România / UE):
 
-| Tier | MD | RO | UE | Cost unitar | Sesiuni voce |
-|---|---|---|---|---|---|
-| FREE | $0 | $0 | $0 | — | — |
-| SIMPLU | $2.99 | $4.99 | $6.99 | $0.16 | 1×5min |
-| PLUS | $6.99 | $9.99 | $14.99 | $0.88 | 5×5min |
-| AVANSAT | $14.99 | $19.99 | $29.99 | $3.99 | 20×5min |
+| Tier | MD | RO | UE | Cost unitar | Marja (MD/RO/UE) | Sesiuni voce |
+|---|---|---|---|---|---|---|
+| FREE | $0 | $0 | $0 | $0.02 | — (nu generează venit) | — |
+| SIMPLU | $2.99 | $4.99 | $6.99 | ~$0.16–0.30* | 90–95% | 1×5min |
+| PLUS | $6.99 | $9.99 | $14.99 | ~$0.88–1.00* | 86–93% | 5×5min |
+| AVANSAT | $14.99 | $19.99 | $29.99 | **$6.48** (nu $3.99 — cifră veche, corectată 14 septembrie 2026) | 56.8% / 67.6% / 78.4% | 20×5min |
 
-Waitlist pe 3 niveluri: Fondator (primii 100), Pioneer (101–500), Early Adopter (501–1000).
+*Costurile SIMPLU/PLUS au un interval pentru că includ standardizarea de model de mai jos (14 septembrie 2026) — nu mai sunt calculate pe mixul vechi de providere.
+
+**De reținut**: costul unitar e dominat de minutele de voce (80–95% din cost pe fiecare tier plătit), nu de modelul de text folosit — verificat cu prețuri reale de API în septembrie 2026 (GPT-4o-mini $0.15/$0.60 per 1M token, Claude Haiku 4.5 $1/$5, ElevenLabs Flash ~$0.05/min). Marja pe AVANSAT în Moldova (56.8%) e mai subțire decât părea din cifra veche — tot profitabilă, dar nu "73-98%" cum spunea versiunea anterioară a acestui document.
+
+Waitlist pe 3 niveluri: Fondator (primii 100), Pioneer (101–500), Early Adopter (501–1000). Peste poziția 1000, înscrierile rămân deschise, doar fără etichetă de tier (decizie 14 septembrie 2026).
 
 ## Tech stack (produs, nu neapărat site-ul de marketing)
 
-GPT-4o-mini Realtime, ElevenLabs (voce), Anthropic API, Supabase (Frankfurt, GDPR), Vercel, Railway — totul găzduit UE, non-negociabil.
+Infrastructură: Supabase (Frankfurt, GDPR), Vercel, Railway — totul găzduit UE, non-negociabil.
+
+AI — decizie de rutare (14 septembrie 2026): tier-ul **FREE** rămâne pe GPT-4o-mini (text) — cel mai ieftin, relevant la scară mare de utilizatori care nu generează venit. Tier-urile **plătite (SIMPLU/PLUS/AVANSAT) sunt standardizate pe un singur model de text (Claude Haiku)**, ca personalitatea/tonul AI-ului să fie consistent pentru orice utilizator plătitor — planul vechi de rutare pe două providere diferite (OpenAI pe SIMPLU, mix Anthropic pe PLUS/AVANSAT) a fost abandonat după calcul: economisea nesemnificativ, dat fiind că vocea domină costul, nu textul. Voce: GPT-4o-mini Realtime (SIMPLU/PLUS), ElevenLabs Flash (AVANSAT).
 
 ## Acest repo
 
