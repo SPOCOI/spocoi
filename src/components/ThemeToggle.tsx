@@ -24,7 +24,9 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setTheme(getStoredTheme());
+    const stored = getStoredTheme();
+    setTheme(stored);
+    applyTheme(stored);
     setMounted(true);
   }, []);
 
