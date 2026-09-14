@@ -138,11 +138,10 @@ Design iterat mai întâi prin mockup-uri (vezi discuția), apoi implementat rea
 - [x] Pagina de cont (`/account`) + check-in zilnic/luna în header — vezi secțiunile de mai sus
 - Job zilnic de ștergere mesaje >30 zile
 - Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
-- Detectare de bază pentru semnale de criză
 - Integrare Stripe (checkout + webhook pentru `subscriptions`)
+- Voce reală (GPT-4o-mini Realtime / ElevenLabs) — acum doar text
 - Interfața de chat reală: topicuri (mood/stress/advice/support), quick control panel, recap de sesiune
-- Setări cont: limbă, temă, "danger zone" (resetare istoric, ștergere cont) — fără toggle-urile "Gen Z mode" / "18+" din prototipul vechi, decât dacă Daniel confirmă explicit că le vrea înapoi
-- Limite de utilizare pe tier (sesiuni voce/lună — deja tăiate strict la 5 min per sesiune)
+- Rate-limiting la nivel de IP/dispozitiv (înainte de a avea cont) + cap agregat de cost/tokeni (vezi nota din secțiunea de limitare de cost)
 
 ## De clarificat cu Daniel înainte de lansare
 
