@@ -106,7 +106,15 @@ Email + parolă prin Supabase Auth, folosind `@supabase/ssr` (sesiune ținută �
 - Când o limită e atinsă: **nu se scrie nimic în bază, nu se apelează AI-ul** — utilizatorul vede o notificare discretă deasupra casetei de input (nu ca mesaj de chat), textul rămâne în casetă ca să poată reîncerca
 - Testat live: coborâtă temporar limita de rafală la 2 pentru verificare rapidă (al 3-lea mesaj a fost blocat corect, cu notificarea corectă), apoi repusă la 10
 
-**Rămâne de făcut, separat**: rate-limiting la nivel de IP/dispozitiv (pentru abuz înainte de a avea cont), și un cap pe tokeni/cost per apel AI (acum doar `max_tokens: 400` pe răspuns, fără monitorizare agregată a costului real cheltuit).
+**Rămâne de făcut, separat**: rate-limiting la nivel de IP/dispozitiv (pentru abuz înainte de a avea cont).
+
+### Fereastră de context AI limitată — construită și testată (14 septembrie 2026)
+
+Problemă reală, nu doar teoretică: `sendMessage` trimitea la Claude **tot istoricul conversației**, la fiecare mesaj — costul per mesaj creștea nelimitat pe măsură ce o conversație se lungea (o conversație de 200 de mesaje ar fi retrimis toate cele 200 ca și context, de fiecare dată), și la un moment dat s-ar fi lovit de limita de context a modelului.
+
+- `src/app/actions/conversations.ts` — `listRecentMessages()` nouă, trimite la AI doar **ultimele 20 de mesaje** (`AI_CONTEXT_MESSAGE_LIMIT`), nu tot istoricul. `listMessages()` (folosită pentru afișarea în UI) rămâne neschimbată — utilizatorul vede tot istoricul, doar AI-ul primește o fereastră limitată
+- Memoria pe termen lung, dincolo de fereastră, rămâne treaba `memory_entries` (portretul), nu a istoricului brut — consistent cu arhitectura deja decisă
+- Testat live: coborâtă temporar fereastra la 4 mesaje, spus AI-ului un "nume secret" în primul mesaj, trimise 2 mesaje de umplutură, apoi întrebat "ce nume ți-am spus" — AI-ul a răspuns corect că nu i s-a spus niciun nume, confirmând că primul mesaj a ieșit din fereastră. Repusă fereastra la 20 după test.
 
 ### Pagina de cont + "luna" (check-in zilnic) — construite și testate (14 septembrie 2026)
 

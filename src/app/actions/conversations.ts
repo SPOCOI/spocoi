@@ -70,6 +70,28 @@ export async function listMessages(conversationId: string): Promise<ChatMessage[
   return data as ChatMessage[];
 }
 
+// How much history gets sent to the AI per reply — deliberately NOT the
+// same as what the UI shows (listMessages, above, returns everything).
+// Without a cap, cost per message grows with every turn of a long
+// conversation (the whole history gets re-sent as context each time),
+// and a long-running conversation would eventually exceed the model's
+// context window outright. Long-term memory across sessions is meant to
+// live in memory_entries (the "portrait"), not in raw message history.
+const AI_CONTEXT_MESSAGE_LIMIT = 20;
+
+async function listRecentMessages(conversationId: string, limit: number): Promise<ChatMessage[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("messages")
+    .select("id, role, modality, content, created_at")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return (data as ChatMessage[]).reverse();
+}
+
 export type SendMessageResult =
   | { status: "ok"; userMessage: ChatMessage; assistantMessage: ChatMessage }
   | { status: "rate-limited"; reason: "burst" | "daily" }
@@ -155,7 +177,7 @@ async function getReplyText(
     return buildCrisisReply(region, locale);
   }
 
-  const history = await listMessages(conversationId);
+  const history = await listRecentMessages(conversationId, AI_CONTEXT_MESSAGE_LIMIT);
 
   try {
     return await generateAssistantReply(history, locale);
