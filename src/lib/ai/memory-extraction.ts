@@ -1,6 +1,9 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "@/lib/supabase-admin";
+import { isPlatformCapExceeded, recordUsage } from "@/lib/ai/usage-cap";
+
+const MODEL = "claude-haiku-4-5-20251001";
 
 /**
  * Fixed taxonomy, decided in chat before building this — keeps entries
@@ -124,11 +127,14 @@ export async function runMemoryExtraction(userId: string, conversationId: string
 
     const { data: profile } = await admin
       .from("profiles")
-      .select("personalization_enabled, memory_last_extracted_at")
+      .select("personalization_enabled, memory_last_extracted_at, tier")
       .eq("id", userId)
       .single();
 
     if (!profile?.personalization_enabled) return;
+
+    const tier = profile.tier ?? "free";
+    if (await isPlatformCapExceeded(tier)) return;
 
     let query = admin
       .from("messages")
@@ -159,11 +165,19 @@ export async function runMemoryExtraction(userId: string, conversationId: string
 
     const anthropic = getClient();
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
+      model: MODEL,
       max_tokens: 800,
       system: EXTRACTION_SYSTEM_PROMPT,
       messages: [{ role: "user", content: buildUserPrompt(existingEntries ?? [], transcript) }],
     });
+
+    await recordUsage(
+      "memory_extraction",
+      tier,
+      MODEL,
+      response.usage.input_tokens,
+      response.usage.output_tokens,
+    );
 
     const textBlock = response.content.find((block) => block.type === "text");
     const ops = textBlock && textBlock.type === "text" ? parseOps(textBlock.text) : [];

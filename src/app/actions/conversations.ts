@@ -6,6 +6,7 @@ import { generateAssistantReply } from "@/lib/ai/reply";
 import { runMemoryExtraction } from "@/lib/ai/memory-extraction";
 import { containsCrisisSignal, buildCrisisReply } from "@/lib/crisis-detection";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { isPlatformCapExceeded } from "@/lib/ai/usage-cap";
 import { resolveRegion, type Region } from "@/lib/region";
 import type { Locale } from "@/i18n/config";
 
@@ -96,7 +97,7 @@ async function listRecentMessages(conversationId: string, limit: number): Promis
 
 export type SendMessageResult =
   | { status: "ok"; userMessage: ChatMessage; assistantMessage: ChatMessage }
-  | { status: "rate-limited"; reason: "burst" | "daily" }
+  | { status: "rate-limited"; reason: "burst" | "daily" | "platform" }
   | { status: "error" };
 
 export async function sendMessage(
@@ -137,6 +138,10 @@ export async function sendMessage(
     return { status: "rate-limited", reason: rateLimit.reason };
   }
 
+  if (await isPlatformCapExceeded(tier)) {
+    return { status: "rate-limited", reason: "platform" };
+  }
+
   const { data: userMessage, error: insertError } = await supabase
     .from("messages")
     .insert({
@@ -154,7 +159,7 @@ export async function sendMessage(
     return { status: "error" };
   }
 
-  const replyText = await getReplyText(conversationId, trimmed, region, locale, memoryEntries);
+  const replyText = await getReplyText(conversationId, trimmed, region, locale, tier, memoryEntries);
 
   const { data: assistantMessage, error: replyError } = await supabase
     .from("messages")
@@ -187,6 +192,7 @@ async function getReplyText(
   latestUserText: string,
   region: Region,
   locale: Locale,
+  tier: string,
   memoryEntries: { category: string; content: string }[],
 ): Promise<string> {
   if (containsCrisisSignal(latestUserText)) {
@@ -196,7 +202,7 @@ async function getReplyText(
   const history = await listRecentMessages(conversationId, AI_CONTEXT_MESSAGE_LIMIT);
 
   try {
-    return await generateAssistantReply(history, locale, memoryEntries);
+    return await generateAssistantReply(history, locale, tier, memoryEntries);
   } catch (err) {
     console.error("generateAssistantReply failed:", err);
     return locale === "en"

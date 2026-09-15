@@ -21,6 +21,7 @@ export function ChatConversation({
   micLabel,
   rateLimitedBurst,
   rateLimitedDaily,
+  rateLimitedPlatform,
 }: {
   conversationId: string;
   initialMessages: ChatMessage[];
@@ -31,6 +32,7 @@ export function ChatConversation({
   micLabel: string;
   rateLimitedBurst: string;
   rateLimitedDaily: string;
+  rateLimitedPlatform: string;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
@@ -51,7 +53,12 @@ export function ChatConversation({
     if (result.status === "ok") {
       setMessages((prev) => [...prev, result.userMessage, result.assistantMessage]);
     } else if (result.status === "rate-limited") {
-      setNotice(result.reason === "burst" ? rateLimitedBurst : rateLimitedDaily);
+      const noticeByReason = {
+        burst: rateLimitedBurst,
+        daily: rateLimitedDaily,
+        platform: rateLimitedPlatform,
+      };
+      setNotice(noticeByReason[result.reason]);
       setDraft(text);
     } else {
       setDraft(text);

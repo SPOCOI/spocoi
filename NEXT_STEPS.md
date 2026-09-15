@@ -167,6 +167,16 @@ Gaura pe care o închide: `rate-limit.ts` (limitarea de mesaje/zi) e per cont �
 - **`src/lib/abuse-rate-limit.ts`**: `getOrCreateDeviceId()` (cookie `spocoi-device`, setat direct din server action), `getClientIp()` (citește `x-real-ip`/`x-forwarded-for` direct din headers — **nu** prin `ipAddress()` din `@vercel/functions`, care nu recunoaște `ReadonlyHeaders` din `next/headers` și arunca `TypeError: headers.get is not a function`, găsit și reparat în timpul testării), `isRateLimited()`, `recordRateLimitEvent()` (apelat doar după succes, nu la fiecare încercare).
 - **Testat live**: 3 conturi noi create în succesiune de pe același "dispozitiv" (browser) → toate reușite; al 4-lea → blocat cu mesajul dedicat, fără niciun rând nou în `auth.users` (verificat direct în SQL Editor). Confirmat că toate 3 au același `device_id` în `rate_limit_events`.
 
+### Cap agregat de cost/tokeni la nivel de platformă — discutat în chat, apoi construit și testat (15 septembrie 2026)
+
+Gaura pe care o închide: nici `rate-limit.ts` (per cont) nici `abuse-rate-limit.ts` (per IP/dispozitiv) nu răspund la "cât cheltuim, în total, azi, pe toată platforma" — dacă FREE devine viral, mulți utilizatori legitimi, fiecare în limita lui individuală, tot pot împinge costul real peste ce-și permite afacerea. Descoperire făcută înainte de a scrie cod: `response.usage` (tokeni reali) din răspunsurile Anthropic nu era capturat nicăieri, deși vine gratis la fiecare apel.
+
+- **Ce se măsoară**: tokeni reali (`input_tokens`/`output_tokens`) din fiecare apel Anthropic — atât `generateAssistantReply` cât și `runMemoryExtraction` — convertiți în cost $ cu prețurile din `CLAUDE.md` (Haiku $1/$5 per 1M). Loghează în tabelul nou `ai_usage_events` (`kind`, `tier`, `model`, `input_tokens`, `output_tokens`, `cost_usd`) — migrarea `20260915103822_ai_usage_cap.sql`.
+- **Enforcement în doi pași** (`src/lib/ai/usage-cap.ts`), verificat înainte de orice apel AI: un plafon **moale** de $5/zi pe cheltuiala FREE (doar FREE se oprește, tier-urile plătite continuă normal) și un plafon **dur** de $25/zi pe cheltuiala totală (oprește pe toată lumea, indiferent de tier — plasă de siguranță pentru un bug sau atac). Praguri conservatoare, alese pre-lansare cu trafic aproape zero — de recalibrat cu date reale.
+- **Fereastră zilnică**, reset UTC — la fel ca la limita per-tier din `rate-limit.ts`.
+- **Găsit și reparat în timpul construcției**: `getReplyText`/`generateAssistantReply` nu primeau `tier`-ul deloc — trebuia plumbat prin `sendMessage` ca să știm ce cheltuială atribuim cui.
+- **Testat live, ambele plafoane**: (1) inserat manual $6 cheltuială sintetică pe FREE azi → următorul mesaj al unui cont FREE a fost blocat corect, cu notificarea dedicată ("volum neașteptat de mare"), fără scriere în bază. (2) urcat contul de test la tier `avansat` + inserat $30 cheltuială totală (deloc pe FREE) → tot blocat, dovadă că plafonul dur chiar ignoră tier-ul. Confirmat și cazul normal: un mesaj obișnuit a scris un rând corect în `ai_usage_events` (319 tokeni input, 33 output, cost calculat exact: $0.000484).
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
@@ -181,7 +191,7 @@ Gaura pe care o închide: `rate-limit.ts` (limitarea de mesaje/zi) e per cont �
 - Voce reală (GPT-4o-mini Realtime / ElevenLabs) — acum doar text
 - Interfața de chat reală: topicuri (mood/stress/advice/support), quick control panel, recap de sesiune
 - [x] Rate-limiting la nivel de IP/dispozitiv, înainte de a avea cont — vezi secțiunea de mai jos
-- Cap agregat de cost/tokeni la nivel de platformă (vezi nota din secțiunea de limitare de cost) — diferit de rate-limiting-ul de mai sus, care e per-IP/dispozitiv, nu per-platformă
+- [x] Cap agregat de cost/tokeni la nivel de platformă — vezi secțiunea de mai sus
 
 ## De clarificat cu Daniel înainte de lansare
 

@@ -144,6 +144,7 @@ export default async function ChatPage({
           micLabel={t.micLabel}
           rateLimitedBurst={t.rateLimitedBurst}
           rateLimitedDaily={t.rateLimitedDaily}
+          rateLimitedPlatform={t.rateLimitedPlatform}
         />
       </div>
     </MoodProvider>

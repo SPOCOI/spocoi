@@ -2,6 +2,9 @@ import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
 import type { ChatMessage } from "@/app/actions/conversations";
 import type { Locale } from "@/i18n/config";
+import { recordUsage } from "@/lib/ai/usage-cap";
+
+const MODEL = "claude-haiku-4-5-20251001";
 
 let client: Anthropic | null = null;
 
@@ -52,6 +55,7 @@ function buildMemoryBlock(
 export async function generateAssistantReply(
   history: ChatMessage[],
   locale: Locale,
+  tier: string,
   memoryEntries: { category: string; content: string }[] = [],
 ): Promise<string> {
   const anthropic = getClient();
@@ -66,11 +70,13 @@ export async function generateAssistantReply(
     }));
 
   const response = await anthropic.messages.create({
-    model: "claude-haiku-4-5-20251001",
+    model: MODEL,
     max_tokens: 400,
     system,
     messages,
   });
+
+  await recordUsage("reply", tier, MODEL, response.usage.input_tokens, response.usage.output_tokens);
 
   const textBlock = response.content.find((block) => block.type === "text");
   if (textBlock && textBlock.type === "text") return textBlock.text;
