@@ -177,6 +177,21 @@ Gaura pe care o închide: nici `rate-limit.ts` (per cont) nici `abuse-rate-limit
 - **Găsit și reparat în timpul construcției**: `getReplyText`/`generateAssistantReply` nu primeau `tier`-ul deloc — trebuia plumbat prin `sendMessage` ca să știm ce cheltuială atribuim cui.
 - **Testat live, ambele plafoane**: (1) inserat manual $6 cheltuială sintetică pe FREE azi → următorul mesaj al unui cont FREE a fost blocat corect, cu notificarea dedicată ("volum neașteptat de mare"), fără scriere în bază. (2) urcat contul de test la tier `avansat` + inserat $30 cheltuială totală (deloc pe FREE) → tot blocat, dovadă că plafonul dur chiar ignoră tier-ul. Confirmat și cazul normal: un mesaj obișnuit a scris un rând corect în `ai_usage_events` (319 tokeni input, 33 output, cost calculat exact: $0.000484).
 
+### Interfața de chat mai avansată: topicuri, recap zilnic, rezumat rapid — mockup vizual înainte de cod, apoi construit și testat (16 septembrie 2026)
+
+Cerința originală ("topicuri, quick control panel, recap de sesiune") era vagă — clarificată în chat, apoi confirmată vizual printr-un mockup (vezi discuția) înainte de a scrie cod. Decizii cheie: topicurile se clasifică automat de AI, nu alese manual; "sesiune" nu există ca concept în schema curentă (o singură conversație mereu deschisă per user), așa că "recap de sesiune" a devenit **recap zilnic**; "quick control panel" s-a redus la un singur buton de rezumat la cerere, nu un panou nou.
+
+Din feedback pe mockup, trei corecții aplicate înainte de cod: eticheta de topic e text neutru, nu pastilă în galben brand (culoarea de accent rămâne rezervată pentru acțiuni primare); recap-ul și check-in-ul de dispoziție sunt **mutual exclusive** (niciodată amândouă în aceeași vizită); butonul de rezumat e ascuns pe conversații scurte.
+
+- **Un singur mecanism de sumarizare** (`src/lib/ai/recap.ts`, apel Claude Haiku separat), refolosit în două locuri:
+  - **Recap zilnic**, persistat în tabelul nou `daily_recaps` (`recap_date`, `topic`, `summary`, `dismissed_at`) — migrarea `20260916091203_daily_recaps.sql`. Generat leneș: calculat o singură dată, la primul `/chat` al zilei, dacă exista conversație ieri și nu există deja un rând pentru ziua respectivă — nu printr-un job cron. Textul e formulat ca invitație de continuare ("Vrei să continuăm de unde am rămas, despre...?"), nu ca raport ("ai spus X, Y").
+  - **Rezumat la cerere** (`summarizeCurrentConversation`), buton nou lângă input, vizibil doar dacă conversația are cel puțin 10 mesaje — sub acest prag n-are ce rezuma. Nu se salvează nicăieri, doar afișat inline, dispare la închidere.
+- **Topicuri fixe**: `mood`, `stress`, `advice`, `support`, `altele` — clasificate automat de același apel care generează recap-ul, afișate doar ca etichetă mică lângă recap ("stare · ieri"), niciodată ca alegere manuală a utilizatorului.
+- **Mutual exclusivitate în `/chat`**: recap-ul se calculează/arată doar dacă check-in-ul de dispoziție de azi e deja rezolvat — niciodată amândouă cardurile deodată.
+- **A treia categorie de cost** adăugată în `ai_usage_events` (`kind = 'recap'`) — migrarea `20260916091840_ai_usage_kind_recap.sql` — respectă și ea plafonul agregat de platformă din secțiunea de mai sus.
+- **Bug real găsit și reparat în timpul testării**: `daily_recaps` avea RLS dar nu avea GRANT explicit pentru rolul `authenticated` — exact aceeași clasă de problemă ca "permission denied for table waitlist_signups" de la începutul proiectului (proiectul are "Automatically expose new tables" dezactivat, deci fiecare tabelă nouă accesată de utilizator autentificat are nevoie de propriul GRANT, RLS-ul singur nu ajunge). Migrarea `20260916094512_daily_recaps_grant.sql` o repară; regulă de reținut pentru orice tabelă viitoare accesată prin clientul normal (nu `supabaseAdmin`).
+- **Testat live, end-to-end**: cont de test cu mesaje sintetice ieri (despărțire/conflict) + azi (stres la job, 10 mesaje) → după rezolvarea check-in-ului de azi, cardul de recap a apărut corect ("stare · ieri" + rezumat cald, invitațional), dispare corect la "Nu acum" și rămâne dispărut după refresh (confirmat direct în `daily_recaps.dismissed_at`). Butonul de rezumat a generat un rezumat real, corect, al conversației curente. Costul ambelor apeluri a apărut corect în `ai_usage_events` sub `kind = 'recap'`.
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
@@ -189,7 +204,7 @@ Gaura pe care o închide: nici `rate-limit.ts` (per cont) nici `abuse-rate-limit
 - [x] Pipeline de extragere/actualizare `memory_entries` — vezi secțiunea de mai jos
 - Integrare Stripe (checkout + webhook pentru `subscriptions`)
 - Voce reală (GPT-4o-mini Realtime / ElevenLabs) — acum doar text
-- Interfața de chat reală: topicuri (mood/stress/advice/support), quick control panel, recap de sesiune
+- [x] Interfața de chat mai avansată: topicuri, recap zilnic, rezumat rapid — vezi secțiunea de mai jos
 - [x] Rate-limiting la nivel de IP/dispozitiv, înainte de a avea cont — vezi secțiunea de mai jos
 - [x] Cap agregat de cost/tokeni la nivel de platformă — vezi secțiunea de mai sus
 

@@ -2,7 +2,7 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 type Tier = "free" | "simplu" | "plus" | "avansat";
-export type UsageKind = "reply" | "memory_extraction";
+export type UsageKind = "reply" | "memory_extraction" | "recap";
 
 /**
  * $ per 1M tokens — matches CLAUDE.md's documented pricing. Only Haiku is

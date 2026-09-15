@@ -6,12 +6,14 @@ import { ChatConversation } from "@/components/ChatConversation";
 import { MoodProvider } from "@/components/MoodProvider";
 import { MoodIndicator, MoodStatusLabel } from "@/components/MoodIndicator";
 import { MoodCheckin } from "@/components/MoodCheckin";
+import { DailyRecapCard } from "@/components/DailyRecapCard";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/actions/auth";
 import { getActiveConversation, listMessages } from "@/app/actions/conversations";
 import { getMoodState, type MoodState } from "@/app/actions/mood";
+import { getOrCreateDailyRecap } from "@/app/actions/recap";
 
 export async function generateMetadata({
   params,
@@ -51,6 +53,17 @@ export default async function ChatPage({
     phase: 0,
     checkedInToday: true,
     trend: null,
+  };
+  // Mutually exclusive with the mood check-in — never show both the same
+  // visit, so we only bother computing (or generating) the recap once the
+  // check-in is already out of the way.
+  const dailyRecap = moodState.checkedInToday ? await getOrCreateDailyRecap(locale) : null;
+  const recapTopicLabels = {
+    mood: t.recapTopicMood,
+    stress: t.recapTopicStress,
+    advice: t.recapTopicAdvice,
+    support: t.recapTopicSupport,
+    altele: t.recapTopicAltele,
   };
 
   return (
@@ -132,6 +145,14 @@ export default async function ChatPage({
               skipHint={t.moodSkip}
             />
           )}
+          {dailyRecap && (
+            <DailyRecapCard
+              recap={dailyRecap}
+              yesterdayLabel={t.recapYesterday}
+              dismissLabel={t.recapDismiss}
+              topicLabels={recapTopicLabels}
+            />
+          )}
         </div>
 
         <ChatConversation
@@ -145,6 +166,9 @@ export default async function ChatPage({
           rateLimitedBurst={t.rateLimitedBurst}
           rateLimitedDaily={t.rateLimitedDaily}
           rateLimitedPlatform={t.rateLimitedPlatform}
+          summarizeLabel={t.summarizeLabel}
+          summaryHeading={t.summaryHeading}
+          summaryClose={t.summaryClose}
         />
       </div>
     </MoodProvider>

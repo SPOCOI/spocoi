@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { sendMessage, type ChatMessage } from "@/app/actions/conversations";
+import { summarizeCurrentConversation } from "@/app/actions/recap";
 import type { Locale } from "@/i18n/config";
+
+/** Below this, a conversation is too short for a summary to be worth
+ * anything — the button stays hidden rather than sitting there useless. */
+const MIN_MESSAGES_FOR_SUMMARY = 10;
 
 function formatTime(iso: string, locale: Locale) {
   return new Date(iso).toLocaleTimeString(locale === "ro" ? "ro-RO" : "en-US", {
@@ -22,6 +27,9 @@ export function ChatConversation({
   rateLimitedBurst,
   rateLimitedDaily,
   rateLimitedPlatform,
+  summarizeLabel,
+  summaryHeading,
+  summaryClose,
 }: {
   conversationId: string;
   initialMessages: ChatMessage[];
@@ -33,11 +41,24 @@ export function ChatConversation({
   rateLimitedBurst: string;
   rateLimitedDaily: string;
   rateLimitedPlatform: string;
+  summarizeLabel: string;
+  summaryHeading: string;
+  summaryClose: string;
 }) {
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
+
+  async function handleSummarize() {
+    if (summarizing) return;
+    setSummarizing(true);
+    const result = await summarizeCurrentConversation(conversationId, locale);
+    setSummarizing(false);
+    if (result) setSummary(result);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -109,7 +130,47 @@ export function ChatConversation({
         {notice && (
           <p className="mx-auto mb-3 max-w-2xl text-center text-xs text-ink-faint">{notice}</p>
         )}
+        {summary && (
+          <div
+            className="mx-auto mb-3 flex max-w-2xl items-start justify-between gap-3 rounded-2xl border border-line px-4 py-3"
+            style={{ background: "var(--chat-surface)" }}
+          >
+            <p className="text-[13px] leading-relaxed text-ink-soft">
+              <span className="font-medium text-ink">{summaryHeading} </span>
+              {summary}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSummary(null)}
+              aria-label={summaryClose}
+              className="shrink-0 text-ink-faint hover:text-ink"
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+            </button>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="mx-auto flex max-w-2xl items-center gap-2.5">
+          {messages.length >= MIN_MESSAGES_FOR_SUMMARY && (
+            <button
+              type="button"
+              onClick={handleSummarize}
+              disabled={summarizing}
+              aria-label={summarizeLabel}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-ink-soft hover:text-ink disabled:opacity-60"
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="h-[18px] w-[18px]" aria-hidden="true">
+                <path
+                  d="M6 4h9l3 3v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path d="M8.5 10h7M8.5 13.5h7M8.5 17h4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
           <div
             className="flex flex-1 items-center rounded-full border border-line px-4 py-3"
             style={{ background: "var(--chat-surface)" }}
