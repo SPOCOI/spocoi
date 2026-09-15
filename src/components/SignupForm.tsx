@@ -25,6 +25,9 @@ export function SignupForm({ locale }: { locale: Locale }) {
       router.refresh();
     } else if (result.status === "confirm-email") {
       setStatus("done");
+    } else if (result.status === "rate-limited") {
+      setErrorMessage(t.errorRateLimited);
+      setStatus("error");
     } else {
       const isUserExists = result.message?.toLowerCase().includes("already registered");
       setErrorMessage(isUserExists ? t.errorUserExists : t.errorGeneric);

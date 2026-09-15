@@ -158,6 +158,15 @@ Decizii luate în chat înainte de cod: personalizarea rămâne pe toate tier-ur
 - **Injectare înapoi în conversație**: `generateAssistantReply` (`src/lib/ai/reply.ts`) primește faptele (max 20, cele mai recent confirmate) și le adaugă într-un bloc separat în system prompt, cu instrucțiune explicită să le folosească firesc, nu să le recite.
 - **Testat live, end-to-end**: cont de test, 6 mesaje care conțin câte un fapt durabil diferit (job, despărțire, obiectiv, stres cu șeful, preferință, somn) → toate 6 extrase corect, în categoriile corecte, rezumate (nu copiate cuvânt cu cuvânt), vizibile în `/account`. Verificat și injectarea: un mesaj ulterior ("Azi a fost o zi grea la birou", fără să menționeze șeful) a primit un răspuns AI care întreabă explicit despre "șef" — dovadă că portretul chiar ajunge în conversație, nu doar se salvează.
 
+### Rate-limiting IP/dispozitiv pe crearea de conturi și waitlist — discutat în chat, apoi construit și testat (15 septembrie 2026)
+
+Gaura pe care o închide: `rate-limit.ts` (limitarea de mesaje/zi) e per cont — nimic nu împiedica pe cineva să ocolească capul FREE (30 mesaje/zi) creând conturi noi la nesfârșit. Decizii luate în chat înainte de cod: protejăm atât signup cât și waitlist; semnalul e IP **și** un cookie anonim de dispozitiv (nu fingerprinting — doar un UUID random, httpOnly), ca farming-ul cu VPN/IP rotative de pe același browser să fie prins și el.
+
+- **Tabel generic** `rate_limit_events` (`kind`, `ip`, `device_id`, `created_at`) — migrarea `20260915090512_abuse_rate_limit.sql`, RLS activ fără nicio policy (acces doar prin service role, la fel ca `waitlist_signups`).
+- **Praguri** (fereastră glisantă, nu total istoric): signup max 3 conturi / IP / 24h și max 3 / dispozitiv / 24h; waitlist max 5 / oră (risc mult mai mic — doar poluează tabela).
+- **`src/lib/abuse-rate-limit.ts`**: `getOrCreateDeviceId()` (cookie `spocoi-device`, setat direct din server action), `getClientIp()` (citește `x-real-ip`/`x-forwarded-for` direct din headers — **nu** prin `ipAddress()` din `@vercel/functions`, care nu recunoaște `ReadonlyHeaders` din `next/headers` și arunca `TypeError: headers.get is not a function`, găsit și reparat în timpul testării), `isRateLimited()`, `recordRateLimitEvent()` (apelat doar după succes, nu la fiecare încercare).
+- **Testat live**: 3 conturi noi create în succesiune de pe același "dispozitiv" (browser) → toate reușite; al 4-lea → blocat cu mesajul dedicat, fără niciun rând nou în `auth.users` (verificat direct în SQL Editor). Confirmat că toate 3 au același `device_id` în `rate_limit_events`.
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
@@ -171,7 +180,8 @@ Decizii luate în chat înainte de cod: personalizarea rămâne pe toate tier-ur
 - Integrare Stripe (checkout + webhook pentru `subscriptions`)
 - Voce reală (GPT-4o-mini Realtime / ElevenLabs) — acum doar text
 - Interfața de chat reală: topicuri (mood/stress/advice/support), quick control panel, recap de sesiune
-- Rate-limiting la nivel de IP/dispozitiv (înainte de a avea cont) + cap agregat de cost/tokeni (vezi nota din secțiunea de limitare de cost)
+- [x] Rate-limiting la nivel de IP/dispozitiv, înainte de a avea cont — vezi secțiunea de mai jos
+- Cap agregat de cost/tokeni la nivel de platformă (vezi nota din secțiunea de limitare de cost) — diferit de rate-limiting-ul de mai sus, care e per-IP/dispozitiv, nu per-platformă
 
 ## De clarificat cu Daniel înainte de lansare
 

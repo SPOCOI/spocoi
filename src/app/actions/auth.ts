@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { localizedHref, type Locale } from "@/i18n/config";
 import { REGION_HEADER, resolveRegion } from "@/lib/region";
+import { getClientIp, getOrCreateDeviceId, isRateLimited, recordRateLimitEvent } from "@/lib/abuse-rate-limit";
 
-export type AuthResult = { status: "ok" | "confirm-email" | "error"; message?: string };
+export type AuthResult = { status: "ok" | "confirm-email" | "error" | "rate-limited"; message?: string };
 
 async function siteOrigin() {
   const h = await headers();
@@ -24,6 +25,12 @@ export async function signUp(
   const supabase = await createClient();
   const origin = await siteOrigin();
 
+  const ip = await getClientIp();
+  const deviceId = await getOrCreateDeviceId();
+  if (await isRateLimited("signup", ip, deviceId)) {
+    return { status: "rate-limited" };
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -36,6 +43,8 @@ export async function signUp(
     console.error("signUp failed:", error);
     return { status: "error", message: error.message };
   }
+
+  await recordRateLimitEvent("signup", ip, deviceId);
 
   // With "Confirm email" off (current dev setting), signUp already returns
   // an active session — no confirmation step needed. With it on (required
