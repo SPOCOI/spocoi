@@ -1,7 +1,9 @@
 "use server";
 
+import { waitUntil } from "@vercel/functions";
 import { createClient } from "@/lib/supabase/server";
 import { generateAssistantReply } from "@/lib/ai/reply";
+import { runMemoryExtraction } from "@/lib/ai/memory-extraction";
 import { containsCrisisSignal, buildCrisisReply } from "@/lib/crisis-detection";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { resolveRegion, type Region } from "@/lib/region";
@@ -113,11 +115,22 @@ export async function sendMessage(
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("tier, region")
+    .select("tier, region, personalization_enabled")
     .eq("id", user.id)
     .single();
   const tier = profile?.tier ?? "free";
   const region = (profile?.region as Region | null) ?? resolveRegion(undefined);
+
+  let memoryEntries: { category: string; content: string }[] = [];
+  if (profile?.personalization_enabled) {
+    const { data } = await supabase
+      .from("memory_entries")
+      .select("category, content")
+      .eq("user_id", user.id)
+      .order("last_confirmed_at", { ascending: false })
+      .limit(20);
+    memoryEntries = data ?? [];
+  }
 
   const rateLimit = await checkRateLimit(supabase, user.id, tier);
   if (rateLimit.limited) {
@@ -141,7 +154,7 @@ export async function sendMessage(
     return { status: "error" };
   }
 
-  const replyText = await getReplyText(conversationId, trimmed, region, locale);
+  const replyText = await getReplyText(conversationId, trimmed, region, locale, memoryEntries);
 
   const { data: assistantMessage, error: replyError } = await supabase
     .from("messages")
@@ -160,6 +173,8 @@ export async function sendMessage(
     return { status: "error" };
   }
 
+  waitUntil(runMemoryExtraction(user.id, conversationId));
+
   return {
     status: "ok",
     userMessage: userMessage as ChatMessage,
@@ -172,6 +187,7 @@ async function getReplyText(
   latestUserText: string,
   region: Region,
   locale: Locale,
+  memoryEntries: { category: string; content: string }[],
 ): Promise<string> {
   if (containsCrisisSignal(latestUserText)) {
     return buildCrisisReply(region, locale);
@@ -180,7 +196,7 @@ async function getReplyText(
   const history = await listRecentMessages(conversationId, AI_CONTEXT_MESSAGE_LIMIT);
 
   try {
-    return await generateAssistantReply(history, locale);
+    return await generateAssistantReply(history, locale, memoryEntries);
   } catch (err) {
     console.error("generateAssistantReply failed:", err);
     return locale === "en"

@@ -147,6 +147,17 @@ La cererea lui Daniel, înainte de a trece mai departe la logică/backend. Găsi
 
 Verificat fără probleme: homepage, pricing, waitlist, login, signup (toate — light+dark, desktop+mobil), `/account` (light+dark, mobil+desktop, inclusiv zona periculoasă), `/en` pentru toate paginile de mai sus, meniul mobil (hamburger).
 
+### Pipeline-ul de extragere a portretului (`memory_entries`) — discutat în chat, apoi construit și testat (15 septembrie 2026)
+
+Decizii luate în chat înainte de cod: personalizarea rămâne pe toate tier-urile (inclusiv FREE — cost mic, throttled), dezactivarea toggle-ului doar pauzează extragerea (nu șterge faptele existente), trigger inline cu `waitUntil` (nu job cron separat).
+
+- **Trigger**: `sendMessage` (`src/app/actions/conversations.ts`) apelează `waitUntil(runMemoryExtraction(...))` din `@vercel/functions` după ce răspunsul AI e deja salvat — rulează după ce utilizatorul a primit deja răspunsul, deci nu adaugă latență percepută. Throttled: rulează doar dacă s-au acumulat cel puțin 6 mesaje noi de la user de la ultima extragere (`src/lib/ai/memory-extraction.ts`).
+- **Checkpoint**: `profiles.memory_last_extracted_at` (migrarea `20260914181940_memory_extraction.sql`) — portretul e per-user, nu per-conversație, fiindcă există mereu o singură conversație deschisă.
+- **Extragere**: apel Claude Haiku separat, primește faptele existente (cu id) + mesajele noi, răspunde cu un JSON de operații `add`/`update`/`remove` pe categorie. Dedup prin context (modelul vede ce există deja), nu prin embeddings.
+- **Categorii fixe** (și constrânse la nivel de DB): `relatii`, `job`, `sanatate`, `obiective`, `stresori_recurenti`, `preferinte`, `altele`.
+- **Injectare înapoi în conversație**: `generateAssistantReply` (`src/lib/ai/reply.ts`) primește faptele (max 20, cele mai recent confirmate) și le adaugă într-un bloc separat în system prompt, cu instrucțiune explicită să le folosească firesc, nu să le recite.
+- **Testat live, end-to-end**: cont de test, 6 mesaje care conțin câte un fapt durabil diferit (job, despărțire, obiectiv, stres cu șeful, preferință, somn) → toate 6 extrase corect, în categoriile corecte, rezumate (nu copiate cuvânt cu cuvânt), vizibile în `/account`. Verificat și injectarea: un mesaj ulterior ("Azi a fost o zi grea la birou", fără să menționeze șeful) a primit un răspuns AI care întreabă explicit despre "șef" — dovadă că portretul chiar ajunge în conversație, nu doar se salvează.
+
 ### Rămas de făcut (schemă/cod, nu doar discuție)
 
 - [x] Migrare SQL pentru schema de mai sus + politici RLS + grants — `supabase/migrations/20260914154009_initial_schema.sql`, `20260914155102_grants.sql`
@@ -156,7 +167,7 @@ Verificat fără probleme: homepage, pricing, waitlist, login, signup (toate —
 - [x] Limitare de cost (rafală + cap zilnic per tier) — vezi secțiunea de mai sus
 - [x] Pagina de cont (`/account`) + check-in zilnic/luna în header — vezi secțiunile de mai sus
 - [x] Job zilnic de ștergere mesaje >30 zile — `pg_cron`, migrarea `20260914175313_message_retention_job.sql`, job `delete-old-messages` rulează zilnic la 03:00 UTC. Testat direct: inserat un mesaj cu dată de acum 35 zile alături de unul recent, rulată comanda exactă din job → doar cel vechi a fost șters, cel recent (+ răspunsul AI) au rămas intacte. Șterge doar `messages`, nu și rândul din `conversations` (promisiunea din Privacy Policy vizează conținutul conversației, nu metadatele)
-- Pipeline de extragere/actualizare `memory_entries` (apel AI separat, cu deduplicare)
+- [x] Pipeline de extragere/actualizare `memory_entries` — vezi secțiunea de mai jos
 - Integrare Stripe (checkout + webhook pentru `subscriptions`)
 - Voce reală (GPT-4o-mini Realtime / ElevenLabs) — acum doar text
 - Interfața de chat reală: topicuri (mood/stress/advice/support), quick control panel, recap de sesiune

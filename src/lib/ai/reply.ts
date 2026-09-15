@@ -34,12 +34,29 @@ What you do NOT do: diagnose, prescribe treatment, claim to be a licensed psycho
 
 Keep responses short — usually 2-5 sentences. This is a conversation, not an essay.`;
 
+function buildMemoryBlock(
+  memoryEntries: { category: string; content: string }[],
+  locale: Locale,
+): string {
+  if (memoryEntries.length === 0) return "";
+
+  const heading =
+    locale === "en"
+      ? "\n\nWhat you know about this person — use it naturally where relevant, never recite it as a list or announce that you remember:"
+      : "\n\nCe știi despre această persoană — folosește firesc, unde e relevant, nu recita ca pe o listă și nu anunța că îți amintești:";
+
+  const lines = memoryEntries.map((entry) => `- ${entry.content}`).join("\n");
+  return `${heading}\n${lines}`;
+}
+
 export async function generateAssistantReply(
   history: ChatMessage[],
   locale: Locale,
+  memoryEntries: { category: string; content: string }[] = [],
 ): Promise<string> {
   const anthropic = getClient();
-  const system = locale === "en" ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT_RO;
+  const basePrompt = locale === "en" ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT_RO;
+  const system = basePrompt + buildMemoryBlock(memoryEntries, locale);
 
   const messages = history
     .filter((m) => m.modality === "text")
