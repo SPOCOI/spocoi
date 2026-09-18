@@ -52,7 +52,7 @@ export function PersonalizationSection({
         >
           <span
             className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
-            style={{ transform: enabled ? "translateX(19px)" : "translateX(3px)" }}
+            style={{ transform: enabled ? "translateX(18px)" : "translateX(2px)" }}
           />
         </button>
       </div>
