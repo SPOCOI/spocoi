@@ -20,21 +20,26 @@ function applyTheme(theme: Theme | null) {
 }
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
-  const [theme, setTheme] = useState<Theme | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const [state, setState] = useState<{ theme: Theme | null; mounted: boolean }>({
+    theme: null,
+    mounted: false,
+  });
+  const { theme, mounted } = state;
 
   useEffect(() => {
     const stored = getStoredTheme();
-    setTheme(stored);
     applyTheme(stored);
-    setMounted(true);
+    // localStorage isn't readable during SSR, so this is the one-time client read
+    // that syncs React state to it after hydration — not a cascading-render loop.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setState({ theme: stored, mounted: true });
   }, []);
 
   function toggle() {
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const current = theme ?? (systemPrefersDark ? "dark" : "light");
     const next: Theme = current === "dark" ? "light" : "dark";
-    setTheme(next);
+    setState((s) => ({ ...s, theme: next }));
     applyTheme(next);
     window.localStorage.setItem("spocoi-theme", next);
   }
