@@ -94,11 +94,20 @@ Platformă de suport emoțional prin conversații AI (text, viitor și voce), pe
 
 ---
 
-## 5. Concluzie (de completat de operator/jurist)
+## 5. Cine trebuie să semneze
+
+Semnătura legală aparține **operatorului** — persoana cu autoritate legală să reprezinte Delgra SRL (de regulă administratorul/directorul companiei). Semnătura înseamnă asumarea răspunderii pentru evaluarea riscurilor, nu doar o formalitate.
+
+- [ ] **De verificat cu un avocat specializat GDPR — DPO obligatoriu?** Art. 37(1)(c) GDPR impune numirea unui Data Protection Officer (Responsabil cu Protecția Datelor) **obligatoriu, nu opțional**, atunci când activitatea principală a operatorului constă în prelucrare pe scară largă de date de categorie specială (Art. 9). Suportul emoțional/date de sănătate mintală este funcția centrală a SPOCOI, nu una marginală — pragul s-ar putea aplica direct. Necesită confirmare juridică explicită înainte de lansare.
+- [ ] Dacă există deja un DPO numit, acesta trebuie consultat înainte de finalizare (Art. 35(2)) — ideal ca a doua semnătură pe acest document.
+- [ ] Recomandat: un avocat/consultant GDPR extern să revizuiască documentul înainte de semnare — semnătura operatorului arată asumarea răspunderii, nu garantează conformitatea.
+
+## 6. Concluzie (de completat de operator/jurist)
 
 - [ ] Riscurile reziduale (după măsurile de mai sus) sunt acceptabile pentru lansare?
 - [ ] Este necesară consultarea prealabilă a autorității de supraveghere (Art. 36 GDPR), în cazul în care riscul rezidual rămâne ridicat?
 - [ ] Semnătură operator: ___________________ Dată: ___________
+- [ ] Semnătură DPO (dacă aplicabil): ___________________ Dată: ___________
 
 ---
 
