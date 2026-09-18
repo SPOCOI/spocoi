@@ -68,17 +68,32 @@ export default async function AiDisclaimerPage({
           <ul>
             <li>The AI can misread the tone, context, or intent of your messages.</li>
             <li>Responses aren&apos;t always accurate, complete, or appropriate for your situation.</li>
-            <li>The AI has no memory or real understanding of your life beyond what you discuss in the conversation.</li>
+            <li>
+              If you turn on personalization in account settings, the AI
+              keeps a limited, durable memory of specific facts across
+              conversations (for example, recurring topics or things you&apos;ve
+              told it matter to you) — this is not a real understanding of
+              your life, only a small set of notes it refers back to. It&apos;s
+              off by default, and you can review, delete, or turn it off
+              entirely at any time from your account settings. See the{" "}
+              <Link href={localizedHref("/legal/privacy", locale)}>Privacy Policy</Link>{" "}
+              for details.
+            </li>
             <li>Like any AI system, it can occasionally produce unexpected or inappropriate responses.</li>
           </ul>
 
-          <h2>It doesn&apos;t recognize or handle emergencies</h2>
+          <h2>It doesn&apos;t reliably recognize or handle emergencies</h2>
           <p>
-            The AI <strong>cannot identify or intervene</strong> in a
-            medical emergency, a suicidal crisis, or a situation of
-            immediate danger. Don&apos;t rely on spocoi in such a
-            situation — see the emergency numbers above and seek real
-            help immediately.
+            spocoi runs a basic, keyword-based check that tries to detect
+            crisis language (for example, mentions of suicide or
+            self-harm) and, when triggered, shows you real emergency
+            resources instead of a normal AI reply. This is a coarse
+            safety net, not reliable crisis detection — it can easily miss
+            a real crisis phrased differently, and it cannot intervene the
+            way a person monitoring in real time could. <strong>Never rely
+            on spocoi in a medical emergency, a suicidal crisis, or a
+            situation of immediate danger</strong> — see the emergency
+            numbers above and seek real help immediately.
           </p>
 
           <h2>Privacy</h2>
@@ -144,8 +159,16 @@ export default async function AiDisclaimerPage({
               pentru situația ta.
             </li>
             <li>
-              AI-ul nu are memorie sau înțelegere reală a vieții tale dincolo de ce
-              discuți în conversație.
+              Dacă activezi personalizarea din setările contului, AI-ul
+              păstrează o memorie limitată și durabilă a unor fapte
+              specifice, între conversații (de exemplu, subiecte recurente
+              sau lucruri pe care i le-ai spus că contează pentru tine) —
+              asta nu înseamnă o înțelegere reală a vieții tale, ci doar un
+              set restrâns de notițe la care se raportează. E dezactivată
+              implicit, iar tu poți vedea, șterge sau opri complet această
+              funcție oricând din setările contului. Vezi{" "}
+              <Link href={localizedHref("/legal/privacy", locale)}>Politica de confidențialitate</Link>{" "}
+              pentru detalii.
             </li>
             <li>
               Ca orice sistem AI, poate genera ocazional răspunsuri neașteptate
@@ -153,13 +176,20 @@ export default async function AiDisclaimerPage({
             </li>
           </ul>
 
-          <h2>Nu recunoaște și nu gestionează urgențe</h2>
+          <h2>Nu recunoaște fiabil și nu gestionează urgențe</h2>
           <p>
-            AI-ul <strong>nu poate identifica și nu poate interveni</strong>{" "}
-            într-o urgență medicală, un episod de criză suicidară sau o situație
-            de pericol imediat. Nu te baza pe spocoi într-o astfel de situație —
-            vezi secțiunea de mai sus cu numerele de urgență și caută ajutor real
-            imediat.
+            spocoi rulează o verificare de bază, pe bază de cuvinte-cheie,
+            care încearcă să detecteze limbaj de criză (de exemplu, mențiuni
+            despre sinucidere sau automutilare) și, când se declanșează,
+            îți arată resurse reale de urgență în loc de un răspuns normal
+            al AI-ului. Asta e o plasă de siguranță aproximativă, nu o
+            detectare fiabilă a crizelor — poate rata ușor o criză reală
+            formulată altfel, și nu poate interveni așa cum ar face-o o
+            persoană care monitorizează în timp real.{" "}
+            <strong>Nu te baza niciodată pe spocoi</strong> într-o urgență
+            medicală, un episod de criză suicidară sau o situație de
+            pericol imediat — vezi secțiunea de mai sus cu numerele de
+            urgență și caută ajutor real imediat.
           </p>
 
           <h2>Confidențialitate</h2>

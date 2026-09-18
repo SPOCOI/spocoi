@@ -133,11 +133,15 @@ export default async function TermsPage({
             the rights to the content you submit in conversations.
           </p>
           <p>
-            By using the service, you grant us a license to use the
-            content of your conversations to improve the service and for
-            internal research. We will not use your conversations for
-            marketing or promotional purposes without your explicit,
-            separate consent.
+            We use the content of your conversations only for the specific
+            purposes described in the{" "}
+            <Link href={localizedHref("/legal/privacy", locale)}>Privacy Policy</Link> —
+            generating the AI&apos;s replies, the optional memory
+            personalization feature, daily conversation summaries, and
+            basic crisis-keyword safety checks. We do not use your
+            conversations to train AI models, for unrelated internal
+            research, or for marketing or promotional purposes, without
+            your explicit, separate consent.
           </p>
 
           <h2>Service limitations</h2>
@@ -263,10 +267,16 @@ export default async function TermsPage({
             conținutului pe care îl trimiți în conversații.
           </p>
           <p>
-            Prin utilizarea serviciului, ne oferi o licență de a folosi conținutul
-            conversațiilor tale pentru îmbunătățirea serviciului și cercetare
-            internă. Nu vom folosi conversațiile tale în scopuri de marketing sau
-            promovare fără consimțământul tău explicit, separat.
+            Folosim conținutul conversațiilor tale doar pentru scopurile
+            specifice descrise în{" "}
+            <Link href={localizedHref("/legal/privacy", locale)}>Politica de confidențialitate</Link> —
+            generarea răspunsurilor AI-ului, funcția opțională de
+            personalizare prin memorie, rezumatele zilnice ale conversațiilor
+            și verificările de siguranță de bază, pe cuvinte-cheie de criză.
+            Nu folosim conversațiile tale pentru antrenarea modelelor AI,
+            pentru cercetare internă neconectată la aceste scopuri sau în
+            scopuri de marketing ori promovare, fără consimțământul tău
+            explicit, separat.
           </p>
 
           <h2>Limitările serviciului</h2>

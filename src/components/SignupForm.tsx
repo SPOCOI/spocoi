@@ -12,13 +12,15 @@ export function SignupForm({ locale }: { locale: Locale }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [specialCategoryConsent, setSpecialCategoryConsent] = useState(false);
   const [status, setStatus] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("submitting");
-    const result = await signUp(email, password, locale);
+    const result = await signUp(email, password, locale, ageConfirmed, specialCategoryConsent);
 
     if (result.status === "ok") {
       router.push(localizedHref("/chat", locale));
@@ -27,6 +29,9 @@ export function SignupForm({ locale }: { locale: Locale }) {
       setStatus("done");
     } else if (result.status === "rate-limited") {
       setErrorMessage(t.errorRateLimited);
+      setStatus("error");
+    } else if (result.status === "consent-required") {
+      setErrorMessage(t.errorConsentRequired);
       setStatus("error");
     } else {
       const isUserExists = result.message?.toLowerCase().includes("already registered");
@@ -78,6 +83,35 @@ export function SignupForm({ locale }: { locale: Locale }) {
           />
         </div>
 
+        <div className="flex flex-col gap-3 rounded-xl border border-line bg-paper p-4">
+          <label className="flex items-start gap-2.5 text-sm text-ink-soft">
+            <input
+              type="checkbox"
+              required
+              checked={ageConfirmed}
+              onChange={(e) => setAgeConfirmed(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+            />
+            <span>{t.consentAgeLabel}</span>
+          </label>
+          <label className="flex items-start gap-2.5 text-sm text-ink-soft">
+            <input
+              type="checkbox"
+              required
+              checked={specialCategoryConsent}
+              onChange={(e) => setSpecialCategoryConsent(e.target.checked)}
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-line text-brand focus:ring-brand"
+            />
+            <span>
+              {t.consentDataLabelPrefix}{" "}
+              <Link href={localizedHref("/legal/privacy", locale)} className="underline">
+                {t.consentPrivacyLinkText}
+              </Link>
+              {t.consentDataLabelSuffix}
+            </span>
+          </label>
+        </div>
+
         {status === "error" && (
           <p className="text-sm text-red-600" role="alert">
             {errorMessage}
@@ -86,7 +120,7 @@ export function SignupForm({ locale }: { locale: Locale }) {
 
         <button
           type="submit"
-          disabled={status === "submitting"}
+          disabled={status === "submitting" || !ageConfirmed || !specialCategoryConsent}
           className="mt-1 w-full rounded-full bg-brand px-6 py-3 text-sm font-semibold text-ink transition-transform hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
         >
           {status === "submitting" ? t.signingUp : t.signUpButton}
