@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import type { Region } from "@/lib/region";
 import type { Locale } from "@/i18n/config";
 import { getClientIp, getOrCreateDeviceId, isRateLimited, recordRateLimitEvent } from "@/lib/abuse-rate-limit";
+import { sendWaitlistConfirmationEmail } from "@/lib/waitlist-email";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -25,12 +26,20 @@ export async function joinWaitlist(
     return { status: "error" };
   }
 
-  const { error } = await supabaseAdmin()
+  const { data, error } = await supabaseAdmin()
     .from("waitlist_signups")
-    .insert({ email: trimmed, region, locale });
+    .insert({ email: trimmed, region, locale })
+    .select("position")
+    .single();
 
   if (!error) {
     await recordRateLimitEvent("waitlist", ip, deviceId);
+    try {
+      await sendWaitlistConfirmationEmail(trimmed, locale, data.position);
+    } catch (emailError) {
+      // Signup already succeeded — a failed confirmation email shouldn't fail it.
+      console.error("sendWaitlistConfirmationEmail failed:", emailError);
+    }
     return { status: "ok" };
   }
 
