@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { DisplayNameForm } from "@/components/DisplayNameForm";
 import { PersonalizationSection } from "@/components/PersonalizationSection";
 import { DangerZone } from "@/components/DangerZone";
+import { ManageSubscriptionButton } from "@/components/ManageSubscriptionButton";
 import { getDictionary } from "@/i18n/dictionaries";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
 import { createClient } from "@/lib/supabase/server";
@@ -48,6 +49,13 @@ export default async function AccountPage({
     .single();
 
   const memoryEntries = profile?.personalization_enabled ? await listMemoryEntries() : [];
+
+  const { data: subscription } = await supabase
+    .from("subscriptions")
+    .select("stripe_customer_id, status")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const hasActiveSubscription = Boolean(subscription?.stripe_customer_id) && subscription?.status !== "canceled";
 
   return (
     <div className="min-h-screen bg-paper px-5 py-10">
@@ -111,12 +119,16 @@ export default async function AccountPage({
               {(profile?.tier ?? "free").toUpperCase()}
             </p>
           </div>
-          <Link
-            href={localizedHref("/pricing", locale)}
-            className="rounded-full border border-line px-4 py-2 text-xs font-medium text-ink hover:border-ink-faint"
-          >
-            {t.viewPlansLabel}
-          </Link>
+          {hasActiveSubscription ? (
+            <ManageSubscriptionButton locale={locale} label={t.manageSubscriptionLabel} errorLabel={t.manageSubscriptionError} />
+          ) : (
+            <Link
+              href={localizedHref("/pricing", locale)}
+              className="rounded-full border border-line px-4 py-2 text-xs font-medium text-ink hover:border-ink-faint"
+            >
+              {t.viewPlansLabel}
+            </Link>
+          )}
         </div>
 
         <div className="mt-4">

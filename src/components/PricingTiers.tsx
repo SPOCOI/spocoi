@@ -1,6 +1,9 @@
+import Link from "next/link";
 import type { Region } from "@/lib/region";
-import type { Locale } from "@/i18n/config";
+import { localizedHref, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
+import { PricingCheckoutButton } from "@/components/PricingCheckoutButton";
+import type { PaidTier } from "@/lib/stripe";
 
 const priceTable: Record<string, Record<Region, number>> = {
   free: { MD: 0, RO: 0, UE: 0 },
@@ -53,6 +56,28 @@ export function PricingTiers({ region, locale }: { region: Region; locale: Local
 
               <div className="mt-5 border-t border-line pt-4 text-sm text-ink-soft">
                 {"sessionsLabel" in tier ? tier.sessionsLabel : t.noVoice}
+              </div>
+
+              <div className="mt-5">
+                {tier.id === "free" ? (
+                  <Link
+                    href={localizedHref("/signup", locale)}
+                    className="block w-full rounded-full border border-line px-5 py-2.5 text-center text-sm font-semibold text-ink transition-colors hover:bg-paper"
+                  >
+                    {t.freeButton}
+                  </Link>
+                ) : (
+                  <PricingCheckoutButton
+                    tier={tier.id as PaidTier}
+                    locale={locale}
+                    label={t.chooseButton}
+                    redirectingLabel={t.redirecting}
+                    errorLabel={t.checkoutError}
+                    className={`w-full rounded-full px-5 py-2.5 text-sm font-semibold transition-transform hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
+                      isPopular ? "bg-brand text-ink" : "border border-line text-ink hover:bg-paper"
+                    }`}
+                  />
+                )}
               </div>
             </div>
           );
