@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { ChatMessage } from "@/app/actions/conversations";
 import type { Locale } from "@/i18n/config";
 import { recordUsage } from "@/lib/ai/usage-cap";
+import { TECHNIQUE_LIBRARY_RO, TECHNIQUE_LIBRARY_EN } from "@/lib/ai/technique-library";
 
 const MODEL = "claude-haiku-4-5-20251001";
 
@@ -60,7 +61,8 @@ export async function generateAssistantReply(
 ): Promise<string> {
   const anthropic = getClient();
   const basePrompt = locale === "en" ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT_RO;
-  const system = basePrompt + buildMemoryBlock(memoryEntries, locale);
+  const techniqueLibrary = locale === "en" ? TECHNIQUE_LIBRARY_EN : TECHNIQUE_LIBRARY_RO;
+  const system = `${basePrompt}\n\n${techniqueLibrary}` + buildMemoryBlock(memoryEntries, locale);
 
   const messages = history
     .filter((m) => m.modality === "text")
