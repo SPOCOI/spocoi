@@ -3,7 +3,17 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LogoMark } from "@/components/Logo";
 import { AdminGrantForm } from "@/components/AdminGrantForm";
-import { isCurrentUserAdmin, listGrants } from "@/app/actions/admin";
+import { AdminOverview } from "@/components/AdminOverview";
+import { AdminStripeEvents } from "@/components/AdminStripeEvents";
+import { AdminUserTable } from "@/components/AdminUserTable";
+import {
+  isCurrentUserAdmin,
+  listGrants,
+  getOverviewStats,
+  getActivityStats,
+  getRecentStripeEvents,
+  listUsers,
+} from "@/app/actions/admin";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
 
 export const metadata: Metadata = {
@@ -24,11 +34,17 @@ export default async function AdminPage({
     redirect(localizedHref("/login", locale));
   }
 
-  const grants = (await listGrants()) ?? [];
+  const [grants, overview, activity, stripeEvents, usersPage] = await Promise.all([
+    listGrants(),
+    getOverviewStats(),
+    getActivityStats(),
+    getRecentStripeEvents(),
+    listUsers({ limit: 20, offset: 0 }),
+  ]);
 
   return (
     <div className="min-h-screen bg-paper px-5 py-10">
-      <div className="mx-auto max-w-xl">
+      <div className="mx-auto max-w-3xl">
         <Link
           href={localizedHref("/account", locale)}
           className="mb-6 inline-flex items-center gap-2 text-xs text-ink-faint hover:text-ink"
@@ -39,12 +55,17 @@ export default async function AdminPage({
 
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Panou admin</h1>
         <p className="mt-1 text-sm text-ink-soft">
-          Acordă sau retrage acces la un tier plătit, fără să treci prin Stripe. Folosește pentru cadouri,
-          testare internă sau parteneriate.
+          Statistici, activitate, evenimente Stripe și acordare manuală de tier-uri.
         </p>
 
-        <div className="mt-6">
-          <AdminGrantForm initialGrants={grants} />
+        <div className="mt-6 space-y-4">
+          {overview && activity && <AdminOverview overview={overview} activity={activity} />}
+          <AdminStripeEvents events={stripeEvents ?? []} />
+          <AdminUserTable
+            initialUsers={usersPage?.users ?? []}
+            initialTotal={usersPage?.total ?? 0}
+          />
+          <AdminGrantForm initialGrants={grants ?? []} />
         </div>
       </div>
     </div>

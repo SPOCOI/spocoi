@@ -4,13 +4,7 @@ import { localizedHref, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { PricingCheckoutButton } from "@/components/PricingCheckoutButton";
 import type { PaidTier } from "@/lib/stripe";
-
-const priceTable: Record<string, Record<Region, number>> = {
-  free: { MD: 0, RO: 0, UE: 0 },
-  simplu: { MD: 2.99, RO: 4.99, UE: 6.99 },
-  plus: { MD: 6.99, RO: 9.99, UE: 14.99 },
-  avansat: { MD: 14.99, RO: 19.99, UE: 29.99 },
-};
+import { priceTable } from "@/lib/pricing";
 
 export function PricingTiers({ region, locale }: { region: Region; locale: Locale }) {
   const t = getDictionary(locale).pricing;
