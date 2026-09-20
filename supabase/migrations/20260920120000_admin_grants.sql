@@ -19,6 +19,7 @@ as $$
 $$;
 
 revoke all on function public.admin_lookup_user_id_by_email(text) from public, anon, authenticated;
+grant execute on function public.admin_lookup_user_id_by_email(text) to service_role;
 
 create or replace function public.admin_list_grants()
 returns table (
@@ -41,6 +42,7 @@ as $$
 $$;
 
 revoke all on function public.admin_list_grants() from public, anon, authenticated;
+grant execute on function public.admin_list_grants() to service_role;
 
 -- Daily sweep: admin grants past their expiry drop back to free automatically.
 select cron.schedule(
