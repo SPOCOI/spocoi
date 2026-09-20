@@ -43,9 +43,92 @@ const CRISIS_KEYWORDS = [
   "better off dead",
 ];
 
+function stripDiacritics(s: string): string {
+  return s.replace(/[ăâ]/g, "a").replace(/î/g, "i").replace(/ș/g, "s").replace(/ț/g, "t");
+}
+
+function levenshtein(a: string, b: string): number {
+  if (a === b) return 0;
+  const m = a.length;
+  const n = b.length;
+  if (m === 0) return n;
+  if (n === 0) return m;
+  let prev = Array.from({ length: n + 1 }, (_, j) => j);
+  let curr = new Array(n + 1).fill(0);
+  for (let i = 1; i <= m; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost);
+    }
+    [prev, curr] = [curr, prev];
+  }
+  return prev[n];
+}
+
+// Typo budget scales with word length so short common words don't false-positive.
+function maxTypoDistance(length: number): number {
+  if (length <= 4) return 1;
+  if (length <= 8) return 2;
+  return 3;
+}
+
+function fuzzyWordMatch(word: string, target: string): boolean {
+  if (word === target) return true;
+  const threshold = maxTypoDistance(target.length);
+  if (Math.abs(word.length - target.length) > threshold) return false;
+  return levenshtein(word, target) <= threshold;
+}
+
+// Stem keywords ("sinucid") are meant to match as the start of a longer
+// word ("sinucidere") — compare against the word's prefix, not the whole
+// word, so a typo doesn't have to land past the stem to still count.
+function fuzzyStemMatch(word: string, stem: string): boolean {
+  if (word.length < 3) return false;
+  const threshold = maxTypoDistance(stem.length);
+  for (const len of [stem.length - 1, stem.length, stem.length + 1]) {
+    if (len <= 0 || len > word.length) continue;
+    if (levenshtein(word.slice(0, len), stem) <= threshold) return true;
+  }
+  return false;
+}
+
+function fuzzyPhraseMatch(messageWords: string[], phraseWords: string[]): boolean {
+  for (let start = 0; start <= messageWords.length - phraseWords.length; start++) {
+    let matched = true;
+    for (let i = 0; i < phraseWords.length; i++) {
+      if (!fuzzyWordMatch(messageWords[start + i], phraseWords[i])) {
+        matched = false;
+        break;
+      }
+    }
+    if (matched) return true;
+  }
+  return false;
+}
+
+const NORMALIZED_KEYWORDS = CRISIS_KEYWORDS.map((keyword) => {
+  const normalized = stripDiacritics(keyword.toLowerCase());
+  return { normalized, words: normalized.split(/\s+/).filter(Boolean) };
+});
+
 export function containsCrisisSignal(text: string): boolean {
-  const normalized = text.toLowerCase();
-  return CRISIS_KEYWORDS.some((keyword) => normalized.includes(keyword));
+  const normalized = stripDiacritics(text.toLowerCase());
+
+  // Fast path: exact (typo-free) match, same as before.
+  if (NORMALIZED_KEYWORDS.some((k) => normalized.includes(k.normalized))) {
+    return true;
+  }
+
+  // Fuzzy path: catches typos from someone typing in a hurry or in distress
+  // — a stressed-out or panicked person is more likely to mistype, and a
+  // missed crisis signal is a far worse outcome than an extra false positive.
+  const messageWords = normalized.split(/[^a-z]+/).filter(Boolean);
+  return NORMALIZED_KEYWORDS.some(({ words }) =>
+    words.length === 1
+      ? messageWords.some((w) => fuzzyStemMatch(w, words[0]))
+      : fuzzyPhraseMatch(messageWords, words),
+  );
 }
 
 export function buildCrisisReply(region: Region, locale: Locale): string {
