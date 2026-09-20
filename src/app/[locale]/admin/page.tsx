@@ -6,6 +6,7 @@ import { AdminGrantForm } from "@/components/AdminGrantForm";
 import { AdminOverview } from "@/components/AdminOverview";
 import { AdminStripeEvents } from "@/components/AdminStripeEvents";
 import { AdminUserTable } from "@/components/AdminUserTable";
+import { AdminTabs } from "@/components/AdminTabs";
 import {
   isCurrentUserAdmin,
   listGrants,
@@ -58,14 +59,22 @@ export default async function AdminPage({
           Statistici, activitate, evenimente Stripe și acordare manuală de tier-uri.
         </p>
 
-        <div className="mt-6 space-y-4">
-          {overview && activity && <AdminOverview overview={overview} activity={activity} />}
-          <AdminStripeEvents events={stripeEvents ?? []} />
-          <AdminUserTable
-            initialUsers={usersPage?.users ?? []}
-            initialTotal={usersPage?.total ?? 0}
+        <div className="mt-6">
+          <AdminTabs
+            overview={
+              <>
+                {overview && activity && <AdminOverview overview={overview} activity={activity} />}
+                <AdminStripeEvents events={stripeEvents ?? []} />
+              </>
+            }
+            users={
+              <AdminUserTable
+                initialUsers={usersPage?.users ?? []}
+                initialTotal={usersPage?.total ?? 0}
+              />
+            }
+            grants={<AdminGrantForm initialGrants={grants ?? []} />}
           />
-          <AdminGrantForm initialGrants={grants ?? []} />
         </div>
       </div>
     </div>
