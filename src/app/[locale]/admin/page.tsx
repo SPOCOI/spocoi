@@ -13,6 +13,7 @@ import {
   getOverviewStats,
   getActivityStats,
   getRecentStripeEvents,
+  getDailyTrends,
   listUsers,
 } from "@/app/actions/admin";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
@@ -35,10 +36,11 @@ export default async function AdminPage({
     redirect(localizedHref("/login", locale));
   }
 
-  const [grants, overview, activity, stripeEvents, usersPage] = await Promise.all([
+  const [grants, overview, activity, trends, stripeEvents, usersPage] = await Promise.all([
     listGrants(),
     getOverviewStats(),
     getActivityStats(),
+    getDailyTrends(),
     getRecentStripeEvents(),
     listUsers({ limit: 20, offset: 0 }),
   ]);
@@ -63,7 +65,9 @@ export default async function AdminPage({
           <AdminTabs
             overview={
               <>
-                {overview && activity && <AdminOverview overview={overview} activity={activity} />}
+                {overview && activity && (
+                  <AdminOverview overview={overview} activity={activity} trends={trends} />
+                )}
                 <AdminStripeEvents events={stripeEvents ?? []} />
               </>
             }

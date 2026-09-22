@@ -1,9 +1,70 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
-import { listUsers, type AdminUserRow } from "@/app/actions/admin";
+import { Fragment, useEffect, useState, useTransition } from "react";
+import { listUsers, getUserDetail, type AdminUserRow, type AdminUserDetail } from "@/app/actions/admin";
+import { TierBadge } from "@/components/TierBadge";
 
 const PAGE_SIZE = 20;
+
+function UserDetailRow({ email }: { email: string }) {
+  const [detail, setDetail] = useState<AdminUserDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    getUserDetail(email).then((result) => {
+      if (!cancelled) {
+        setDetail(result);
+        setLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
+
+  if (loading) {
+    return <p className="px-3 py-3 text-xs text-ink-faint">Se încarcă...</p>;
+  }
+  if (!detail) {
+    return <p className="px-3 py-3 text-xs text-ink-faint">Nu s-au putut încărca detaliile.</p>;
+  }
+
+  const source =
+    detail.subscriptionSource === "admin"
+      ? `Acordat manual${detail.grantedBy ? ` de ${detail.grantedBy}` : ""}${
+          detail.expiresAt
+            ? ` · expiră ${new Date(detail.expiresAt).toLocaleDateString("ro-RO")}`
+            : " · permanent"
+        }`
+      : detail.subscriptionSource === "stripe"
+        ? `Stripe${detail.subscriptionStatus ? ` · ${detail.subscriptionStatus}` : ""}`
+        : "FREE";
+
+  return (
+    <div className="grid grid-cols-2 gap-3 px-3 py-3 text-xs sm:grid-cols-4">
+      <div>
+        <p className="text-ink-faint">Conversații</p>
+        <p className="text-ink">{detail.conversations}</p>
+      </div>
+      <div>
+        <p className="text-ink-faint">Mesaje</p>
+        <p className="text-ink">{detail.messages}</p>
+      </div>
+      <div>
+        <p className="text-ink-faint">Ultima activitate</p>
+        <p className="text-ink">
+          {detail.lastActivity ? new Date(detail.lastActivity).toLocaleDateString("ro-RO") : "—"}
+        </p>
+      </div>
+      <div>
+        <p className="text-ink-faint">Sursă abonament</p>
+        <p className="text-ink">{source}</p>
+      </div>
+    </div>
+  );
+}
 
 export function AdminUserTable({
   initialUsers,
@@ -18,6 +79,7 @@ export function AdminUserTable({
   const [tier, setTier] = useState("");
   const [region, setRegion] = useState("");
   const [page, setPage] = useState(0);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -97,14 +159,28 @@ export function AdminUserTable({
           </thead>
           <tbody className={isPending ? "opacity-50" : ""}>
             {users.map((user) => (
-              <tr key={user.email} className="border-b border-line/50">
-                <td className="py-2 pr-3 text-ink">{user.displayName || user.email}</td>
-                <td className="py-2 pr-3 text-ink-soft">{user.tier.toUpperCase()}</td>
-                <td className="py-2 pr-3 text-ink-soft">{user.region ?? "—"}</td>
-                <td className="py-2 pr-3 text-ink-soft">
-                  {new Date(user.createdAt).toLocaleDateString("ro-RO")}
-                </td>
-              </tr>
+              <Fragment key={user.email}>
+                <tr
+                  onClick={() => setExpanded(expanded === user.email ? null : user.email)}
+                  className="cursor-pointer border-b border-line/50 hover:bg-paper"
+                >
+                  <td className="py-2 pr-3 text-ink">{user.displayName || user.email}</td>
+                  <td className="py-2 pr-3">
+                    <TierBadge tier={user.tier} />
+                  </td>
+                  <td className="py-2 pr-3 text-ink-soft">{user.region ?? "—"}</td>
+                  <td className="py-2 pr-3 text-ink-soft">
+                    {new Date(user.createdAt).toLocaleDateString("ro-RO")}
+                  </td>
+                </tr>
+                {expanded === user.email && (
+                  <tr className="border-b border-line/50 bg-paper">
+                    <td colSpan={4}>
+                      <UserDetailRow email={user.email} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
             ))}
             {users.length === 0 && (
               <tr>

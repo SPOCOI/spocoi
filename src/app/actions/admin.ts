@@ -233,6 +233,43 @@ export async function getRecentStripeEvents(): Promise<StripeEventSummary[] | nu
   }
 }
 
+export type DailyTrends = {
+  signups: number[];
+  messages: number[];
+};
+
+export async function getDailyTrends(): Promise<DailyTrends | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_daily_trends");
+  if (error || !data) return null;
+
+  return data as DailyTrends;
+}
+
+export type AdminUserDetail = {
+  conversations: number;
+  messages: number;
+  lastActivity: string | null;
+  subscriptionSource: string | null;
+  subscriptionStatus: string | null;
+  grantedBy: string | null;
+  expiresAt: string | null;
+};
+
+export async function getUserDetail(email: string): Promise<AdminUserDetail | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_user_detail", {
+    target_email: email.trim().toLowerCase(),
+  });
+  if (error || !data) return null;
+
+  return data as AdminUserDetail;
+}
+
 export type AdminUserRow = {
   email: string;
   tier: string;

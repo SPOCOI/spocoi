@@ -12,6 +12,13 @@
   --color-brand-soft: #fde882;
   --color-brand-pale: #fffabf;
   --color-brand-deep: #8a6900;
+
+  --color-tier-simplu-bg: #e6f1fb;
+  --color-tier-simplu-text: #0c447c;
+  --color-tier-plus-bg: #fffabf;
+  --color-tier-plus-text: #8a6900;
+  --color-tier-avansat-bg: #eeedfe;
+  --color-tier-avansat-text: #3c3489;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +34,13 @@
     --color-brand-soft: #efce6a;
     --color-brand-pale: #4a4322;
     --color-brand-deep: #ffe38a;
+
+    --color-tier-simplu-bg: #042c53;
+    --color-tier-simplu-text: #b5d4f4;
+    --color-tier-plus-bg: #4a4322;
+    --color-tier-plus-text: #ffe38a;
+    --color-tier-avansat-bg: #26215c;
+    --color-tier-avansat-text: #cecbf6;
   }
 }
 
@@ -42,6 +56,13 @@
   --color-brand-soft: #efce6a;
   --color-brand-pale: #4a4322;
   --color-brand-deep: #ffe38a;
+
+  --color-tier-simplu-bg: #042c53;
+  --color-tier-simplu-text: #b5d4f4;
+  --color-tier-plus-bg: #4a4322;
+  --color-tier-plus-text: #ffe38a;
+  --color-tier-avansat-bg: #26215c;
+  --color-tier-avansat-text: #cecbf6;
 }
 
 @theme inline {
@@ -55,6 +76,12 @@
   --color-brand-soft: var(--color-brand-soft);
   --color-brand-pale: var(--color-brand-pale);
   --color-brand-deep: var(--color-brand-deep);
+  --color-tier-simplu-bg: var(--color-tier-simplu-bg);
+  --color-tier-simplu-text: var(--color-tier-simplu-text);
+  --color-tier-plus-bg: var(--color-tier-plus-bg);
+  --color-tier-plus-text: var(--color-tier-plus-text);
+  --color-tier-avansat-bg: var(--color-tier-avansat-bg);
+  --color-tier-avansat-text: var(--color-tier-avansat-text);
   --font-sans: var(--font-poppins);
 }
 
