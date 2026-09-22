@@ -37,11 +37,13 @@ Freemium, geo-adaptiv (Moldova / România / UE):
 | FREE | $0 | $0 | $0 | $0.02 | — (nu generează venit) | — |
 | SIMPLU | $2.99 | $4.99 | $6.99 | ~$0.16–0.30* | 90–95% | 1×5min |
 | PLUS | $6.99 | $9.99 | $14.99 | ~$0.88–1.00* | 86–93% | 5×5min |
-| AVANSAT | $14.99 | $19.99 | $29.99 | **$6.48** (nu $3.99 — cifră veche, corectată 14 septembrie 2026) | 56.8% / 67.6% / 78.4% | 20×5min |
+| AVANSAT | $17.99 | $24.99 | $34.99 | **$6.48** (nu $3.99 — cifră veche, corectată 14 septembrie 2026) | 64.0% / 74.1% / 81.5% | 20×5min |
 
 *Costurile SIMPLU/PLUS au un interval pentru că includ standardizarea de model de mai jos (14 septembrie 2026) — nu mai sunt calculate pe mixul vechi de providere.
 
-**De reținut**: costul unitar e dominat de minutele de voce (80–95% din cost pe fiecare tier plătit), nu de modelul de text folosit — verificat cu prețuri reale de API în septembrie 2026 (GPT-4o-mini $0.15/$0.60 per 1M token, Claude Haiku 4.5 $1/$5, ElevenLabs Flash ~$0.05/min). Marja pe AVANSAT în Moldova (56.8%) e mai subțire decât părea din cifra veche — tot profitabilă, dar nu "73-98%" cum spunea versiunea anterioară a acestui document.
+**De reținut**: costul unitar e dominat de minutele de voce (80–95% din cost pe fiecare tier plătit), nu de modelul de text folosit — verificat cu prețuri reale de API în septembrie 2026 (GPT-4o-mini $0.15/$0.60 per 1M token, Claude Haiku 4.5 $1/$5, ElevenLabs Flash ~$0.05/min).
+
+**Preț AVANSAT majorat 22 septembrie 2026** (de la $14.99/$19.99/$29.99 la $17.99/$24.99/$34.99) — decizie bazată pe benchmarking competitori, verificare de affordability pe venit mediu MD/RO/UE și îmbunătățirea marjei (56.8%→64.0% MD). Testat acum fiindcă sunt aproape zero abonați AVANSAT existenți de perturbat; reversibil oricând (Stripe Price nou, fără impact pentru abonații deja existenți). Price ID-urile Stripe pentru toate 3 tier-uri (SIMPLU/PLUS/AVANSAT × MD/RO/UE) au fost recreate în contul de test `spocoi sandbox`, care nu avea niciun produs configurat anterior.
 
 Waitlist pe 3 niveluri: Fondator (primii 100), Pioneer (101–500), Early Adopter (501–1000). Peste poziția 1000, înscrierile rămân deschise, doar fără etichetă de tier (decizie 14 septembrie 2026).
 
