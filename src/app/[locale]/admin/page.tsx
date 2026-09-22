@@ -7,6 +7,7 @@ import { AdminOverview } from "@/components/AdminOverview";
 import { AdminStripeEvents } from "@/components/AdminStripeEvents";
 import { AdminUserTable } from "@/components/AdminUserTable";
 import { AdminTabs } from "@/components/AdminTabs";
+import { AdminPricingTest } from "@/components/AdminPricingTest";
 import {
   isCurrentUserAdmin,
   listGrants,
@@ -14,6 +15,7 @@ import {
   getActivityStats,
   getRecentStripeEvents,
   getDailyTrends,
+  getPricingTestResults,
   listUsers,
 } from "@/app/actions/admin";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
@@ -36,14 +38,16 @@ export default async function AdminPage({
     redirect(localizedHref("/login", locale));
   }
 
-  const [grants, overview, activity, trends, stripeEvents, usersPage] = await Promise.all([
-    listGrants(),
-    getOverviewStats(),
-    getActivityStats(),
-    getDailyTrends(),
-    getRecentStripeEvents(),
-    listUsers({ limit: 20, offset: 0 }),
-  ]);
+  const [grants, overview, activity, trends, stripeEvents, usersPage, pricingTest] =
+    await Promise.all([
+      listGrants(),
+      getOverviewStats(),
+      getActivityStats(),
+      getDailyTrends(),
+      getRecentStripeEvents(),
+      listUsers({ limit: 20, offset: 0 }),
+      getPricingTestResults(),
+    ]);
 
   return (
     <div className="min-h-screen bg-paper px-5 py-10">
@@ -69,6 +73,7 @@ export default async function AdminPage({
                   <AdminOverview overview={overview} activity={activity} trends={trends} />
                 )}
                 <AdminStripeEvents events={stripeEvents ?? []} />
+                <AdminPricingTest responses={pricingTest ?? []} />
               </>
             }
             users={

@@ -334,6 +334,47 @@ export async function listUsers(filters: {
   };
 }
 
+export type PricingTestResponse = {
+  region: string;
+  tooCheap: number | null;
+  bargain: number | null;
+  expensive: number | null;
+  tooExpensive: number | null;
+  feedback: string | null;
+  email: string | null;
+  createdAt: string;
+};
+
+export async function getPricingTestResults(): Promise<PricingTestResponse[] | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_pricing_test_results");
+  if (error || !data) return [];
+
+  return (
+    data as Array<{
+      region: string;
+      too_cheap: number | null;
+      bargain: number | null;
+      expensive: number | null;
+      too_expensive: number | null;
+      feedback: string | null;
+      email: string | null;
+      created_at: string;
+    }>
+  ).map((row) => ({
+    region: row.region,
+    tooCheap: row.too_cheap,
+    bargain: row.bargain,
+    expensive: row.expensive,
+    tooExpensive: row.too_expensive,
+    feedback: row.feedback,
+    email: row.email,
+    createdAt: row.created_at,
+  }));
+}
+
 export async function listGrants(): Promise<AdminGrant[] | null> {
   const adminEmail = await requireAdminEmail();
   if (!adminEmail) return null;
