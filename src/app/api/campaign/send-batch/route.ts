@@ -4,10 +4,30 @@ import { supabaseAdmin } from "@/lib/supabase-admin";
 import { getCampaignResend, CAMPAIGN_FROM_ADDRESS, CAMPAIGN_REPLY_TO } from "@/lib/resend-campaign";
 import { buildCampaignHtml, CAMPAIGN_SUBJECT } from "@/lib/campaign-email";
 
-/** How many cold-outreach emails to send per invocation — paced daily via
- * Vercel Cron rather than all at once, to protect a brand-new sending
- * domain's reputation. */
-const BATCH_SIZE = 150;
+/** Daily send volume ramps up gradually so a brand-new sending domain
+ * (mail.spocoi.com, zero prior reputation) can build trust with mailbox
+ * providers before reaching full volume — jumping straight to a large batch
+ * gets a much larger share flagged as spam. Index = days since the first
+ * successful send; the last value repeats once the ramp is exhausted. */
+const WARMUP_SCHEDULE = [20, 20, 40, 40, 70, 70, 100, 100, 150];
+
+async function resolveBatchSize(db: ReturnType<typeof supabaseAdmin>): Promise<number> {
+  const { data: firstSent } = await db
+    .from("campaign_recipients")
+    .select("sent_at")
+    .eq("status", "sent")
+    .order("sent_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!firstSent?.sent_at) return WARMUP_SCHEDULE[0];
+
+  const daysSinceStart = Math.floor(
+    (Date.now() - new Date(firstSent.sent_at).getTime()) / (24 * 60 * 60 * 1000)
+  );
+  const dayIndex = Math.min(daysSinceStart, WARMUP_SCHEDULE.length - 1);
+  return WARMUP_SCHEDULE[dayIndex];
+}
 
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
@@ -16,12 +36,13 @@ export async function GET(request: NextRequest) {
   }
 
   const db = supabaseAdmin();
+  const batchSize = await resolveBatchSize(db);
   const { data: recipients, error } = await db
     .from("campaign_recipients")
     .select("id, email, unsubscribe_token")
     .eq("status", "pending")
     .order("created_at", { ascending: true })
-    .limit(BATCH_SIZE);
+    .limit(batchSize);
 
   if (error) {
     console.error("send-batch: failed to load recipients:", error);
@@ -57,5 +78,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, failed, done: false });
+  return NextResponse.json({ sent, failed, done: false, batchSize });
 }
