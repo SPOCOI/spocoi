@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/campaign/send-batch",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
