@@ -375,6 +375,24 @@ export async function getPricingTestResults(): Promise<PricingTestResponse[] | n
   }));
 }
 
+export type CampaignStats = {
+  total: number;
+  pending: number;
+  sent: number;
+  unsubscribed: number;
+  failed: number;
+};
+
+export async function getCampaignStats(): Promise<CampaignStats | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_campaign_stats");
+  if (error || !data) return null;
+
+  return data as CampaignStats;
+}
+
 export async function listGrants(): Promise<AdminGrant[] | null> {
   const adminEmail = await requireAdminEmail();
   if (!adminEmail) return null;

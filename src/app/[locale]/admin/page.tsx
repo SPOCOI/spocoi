@@ -8,6 +8,7 @@ import { AdminStripeEvents } from "@/components/AdminStripeEvents";
 import { AdminUserTable } from "@/components/AdminUserTable";
 import { AdminTabs } from "@/components/AdminTabs";
 import { AdminPricingTest } from "@/components/AdminPricingTest";
+import { AdminCampaignStats } from "@/components/AdminCampaignStats";
 import {
   isCurrentUserAdmin,
   listGrants,
@@ -16,6 +17,7 @@ import {
   getRecentStripeEvents,
   getDailyTrends,
   getPricingTestResults,
+  getCampaignStats,
   listUsers,
 } from "@/app/actions/admin";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
@@ -38,7 +40,7 @@ export default async function AdminPage({
     redirect(localizedHref("/login", locale));
   }
 
-  const [grants, overview, activity, trends, stripeEvents, usersPage, pricingTest] =
+  const [grants, overview, activity, trends, stripeEvents, usersPage, pricingTest, campaignStats] =
     await Promise.all([
       listGrants(),
       getOverviewStats(),
@@ -47,6 +49,7 @@ export default async function AdminPage({
       getRecentStripeEvents(),
       listUsers({ limit: 20, offset: 0 }),
       getPricingTestResults(),
+      getCampaignStats(),
     ]);
 
   return (
@@ -83,6 +86,7 @@ export default async function AdminPage({
               />
             }
             grants={<AdminGrantForm initialGrants={grants ?? []} />}
+            campaign={<AdminCampaignStats stats={campaignStats} />}
           />
         </div>
       </div>
