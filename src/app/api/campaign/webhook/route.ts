@@ -41,17 +41,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "missing-signature-headers" }, { status: 400 });
   }
 
-  let event: ResendWebhookEvent;
   try {
     const webhook = new Webhook(secret);
-    event = webhook.verify(payload, {
+    // verify() only validates the signature (throws if invalid) — it does not
+    // return the parsed body, so we still parse `payload` ourselves below.
+    webhook.verify(payload, {
       "svix-id": svixId,
       "svix-timestamp": svixTimestamp,
       "svix-signature": svixSignature,
-    }) as unknown as ResendWebhookEvent;
+    });
   } catch {
     return NextResponse.json({ error: "invalid-signature" }, { status: 401 });
   }
+
+  const event = JSON.parse(payload) as ResendWebhookEvent;
 
   const newStatus = STATUS_BY_EVENT[event.type];
   if (!newStatus) {
