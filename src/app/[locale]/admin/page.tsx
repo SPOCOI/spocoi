@@ -18,6 +18,7 @@ import {
   getDailyTrends,
   getPricingTestResults,
   getCampaignStats,
+  getCampaignDailyStats,
   listUsers,
 } from "@/app/actions/admin";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
@@ -40,17 +41,27 @@ export default async function AdminPage({
     redirect(localizedHref("/login", locale));
   }
 
-  const [grants, overview, activity, trends, stripeEvents, usersPage, pricingTest, campaignStats] =
-    await Promise.all([
-      listGrants(),
-      getOverviewStats(),
-      getActivityStats(),
-      getDailyTrends(),
-      getRecentStripeEvents(),
-      listUsers({ limit: 20, offset: 0 }),
-      getPricingTestResults(),
-      getCampaignStats(),
-    ]);
+  const [
+    grants,
+    overview,
+    activity,
+    trends,
+    stripeEvents,
+    usersPage,
+    pricingTest,
+    campaignStats,
+    campaignDailyStats,
+  ] = await Promise.all([
+    listGrants(),
+    getOverviewStats(),
+    getActivityStats(),
+    getDailyTrends(),
+    getRecentStripeEvents(),
+    listUsers({ limit: 20, offset: 0 }),
+    getPricingTestResults(),
+    getCampaignStats(),
+    getCampaignDailyStats(),
+  ]);
 
   return (
     <div className="min-h-screen bg-paper px-5 py-10">
@@ -86,7 +97,7 @@ export default async function AdminPage({
               />
             }
             grants={<AdminGrantForm initialGrants={grants ?? []} />}
-            campaign={<AdminCampaignStats stats={campaignStats} />}
+            campaign={<AdminCampaignStats stats={campaignStats} dailyStats={campaignDailyStats} />}
           />
         </div>
       </div>

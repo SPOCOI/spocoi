@@ -393,6 +393,71 @@ export async function getCampaignStats(): Promise<CampaignStats | null> {
   return data as CampaignStats;
 }
 
+export type CampaignDayStats = {
+  day: string;
+  sent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  bounced: number;
+  complained: number;
+};
+
+export async function getCampaignDailyStats(): Promise<CampaignDayStats[] | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_campaign_daily_stats");
+  if (error || !data) return null;
+
+  return data as CampaignDayStats[];
+}
+
+export type CampaignRecipientRow = {
+  email: string;
+  status: string;
+  deliveryStatus: string | null;
+  sentAt: string | null;
+  deliveredAt: string | null;
+  openedAt: string | null;
+  clickedAt: string | null;
+  bouncedAt: string | null;
+};
+
+export async function getCampaignRecipientsForDay(
+  day: string,
+): Promise<CampaignRecipientRow[] | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_campaign_recipients_for_day", {
+    target_day: day,
+  });
+  if (error || !data) return null;
+
+  return (
+    data as Array<{
+      email: string;
+      status: string;
+      delivery_status: string | null;
+      sent_at: string | null;
+      delivered_at: string | null;
+      opened_at: string | null;
+      clicked_at: string | null;
+      bounced_at: string | null;
+    }>
+  ).map((row) => ({
+    email: row.email,
+    status: row.status,
+    deliveryStatus: row.delivery_status,
+    sentAt: row.sent_at,
+    deliveredAt: row.delivered_at,
+    openedAt: row.opened_at,
+    clickedAt: row.clicked_at,
+    bouncedAt: row.bounced_at,
+  }));
+}
+
 export async function listGrants(): Promise<AdminGrant[] | null> {
   const adminEmail = await requireAdminEmail();
   if (!adminEmail) return null;

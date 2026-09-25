@@ -59,16 +59,22 @@ export async function GET(request: NextRequest) {
 
   for (const recipient of recipients) {
     try {
-      await resend.emails.send({
+      const { data: sendResult, error: sendError } = await resend.emails.send({
         from: CAMPAIGN_FROM_ADDRESS,
         to: recipient.email,
         replyTo: CAMPAIGN_REPLY_TO,
         subject: CAMPAIGN_SUBJECT,
         html: buildCampaignHtml(recipient.unsubscribe_token),
       });
+      if (sendError) throw sendError;
       await db
         .from("campaign_recipients")
-        .update({ status: "sent", sent_at: new Date().toISOString() })
+        .update({
+          status: "sent",
+          sent_at: new Date().toISOString(),
+          resend_email_id: sendResult?.id ?? null,
+          delivery_status: "sent",
+        })
         .eq("id", recipient.id);
       sent++;
     } catch (sendError) {
