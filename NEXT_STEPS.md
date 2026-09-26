@@ -208,6 +208,20 @@ Din feedback pe mockup, trei corecții aplicate înainte de cod: eticheta de top
 - [x] Rate-limiting la nivel de IP/dispozitiv, înainte de a avea cont — vezi secțiunea de mai jos
 - [x] Cap agregat de cost/tokeni la nivel de platformă — vezi secțiunea de mai sus
 
+## Aplicația iOS nativă (`Spocoi/`, SwiftUI) — începută 26 septembrie 2026
+
+Vorbește cu `src/app/api/ios/**` (JWT în header, nu cookies) — logica de business (AI, criză, limite, cap de cost, portret) e reutilizată din `src/lib/*`. Rulează doar pe Mac cu Xcode (nu din sesiunile cloud Linux).
+
+- [x] Autentificare email+parolă, tokenuri în Keychain, refresh automat — testat în Simulator
+- [x] Acasă: luna (check-in zilnic), fază, trend; fontul Poppins inclus în app
+- [x] Chat: conversația activă, istoric, răspuns AI real — testat în Simulator
+- [x] Cont: temă (Sistem/Deschis/Închis), link-uri legale
+- [x] Cont legat la date reale (27 septembrie 2026): tier real, nume afișat, toggle personalizare, portret cu ștergere individuală, resetare istoric, **ștergere cont** (obligatorie pentru App Store, ghid 5.1.1(v)) — rute `src/app/api/ios/account/**`. **Netestat încă**: Swift necompilat în Xcode, rutele netestate live; funcționează în app abia după deploy pe `www.spocoi.com`
+- [ ] Limba e fixată pe `ro` în chat (`locale: "ro"`) — de legat la limba aleasă
+- [ ] Recap zilnic / rezumat rapid / topicuri (există pe web, lipsesc în iOS)
+- [ ] Abonament din app — atenție: Apple cere In-App Purchase pentru abonamente digitale cumpărate în app; link-ul spre pricing web trebuie verificat față de regulile App Store înainte de trimitere
+- [ ] Cont Apple Developer plătit, TestFlight, iconiță reală, App Store listing
+
 ## De clarificat cu Daniel înainte de lansare
 
 - Revizuire juridică reală a paginilor legale (sunt scrise responsabil, dar rămân draft până le vede un avocat)
