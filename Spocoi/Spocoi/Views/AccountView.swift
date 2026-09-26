@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AccountView: View {
     @Environment(AuthStore.self) private var authStore
+    @AppStorage(AppearanceMode.storageKey) private var appearanceModeRaw = AppearanceMode.system.rawValue
 
     var body: some View {
         NavigationStack {
@@ -34,6 +35,20 @@ struct AccountView: View {
                             .foregroundStyle(.secondary)
                     }
                     Link("Vezi planurile", destination: URL(string: "https://spocoi.com/pricing")!)
+                }
+
+                Section("Aspect") {
+                    Picker("Temă", selection: $appearanceModeRaw) {
+                        ForEach(AppearanceMode.allCases) { mode in
+                            Text(mode.label).tag(mode.rawValue)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                Section("Confidențialitate") {
+                    Link("Termeni și condiții", destination: URL(string: "https://www.spocoi.com/ro/legal/terms")!)
+                    Link("Politica de confidențialitate", destination: URL(string: "https://www.spocoi.com/ro/legal/privacy")!)
                 }
 
                 Section {

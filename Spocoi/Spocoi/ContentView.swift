@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(AuthStore.self) private var authStore
+    @AppStorage(AppearanceMode.storageKey) private var appearanceModeRaw = AppearanceMode.system.rawValue
     @State private var didBootstrap = false
 
     var body: some View {
@@ -18,6 +19,7 @@ struct ContentView: View {
             await authStore.bootstrap()
             didBootstrap = true
         }
+        .preferredColorScheme((AppearanceMode(rawValue: appearanceModeRaw) ?? .system).colorScheme)
     }
 }
 
