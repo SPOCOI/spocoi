@@ -12,7 +12,6 @@ function UserDetailRow({ email }: { email: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
     getUserDetail(email).then((result) => {
       if (!cancelled) {
         setDetail(result);
@@ -96,7 +95,6 @@ export function AdminUserTable({
         setTotal(result.total);
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, tier, region, page]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
