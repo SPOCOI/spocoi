@@ -40,3 +40,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Xcode (ios/Spocoi)
+xcuserdata/
+*.xcuserstate
+DerivedData/
+.swiftpm/
