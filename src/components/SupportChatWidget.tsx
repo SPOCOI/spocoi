@@ -29,6 +29,65 @@ const COPY = {
   },
 } as const;
 
+// Answered instantly, client-side, with no API call — zero cost and zero
+// latency for the questions visitors ask most often. Keep these in sync with
+// the facts in support-chat.ts's system prompt; a free-text question still
+// goes to the model.
+const QUICK_REPLIES = {
+  ro: [
+    {
+      question: "Ce este spocoi?",
+      answer:
+        "spocoi e o platformă AI de suport emoțional (voce/text) pentru Moldova, România și diaspora UE — o alternativă accesibilă, disponibilă 24/7, la terapia tradițională. Nu e încă lansată; momentan poți doar să te înscrii pe waitlist.",
+    },
+    {
+      question: "Cât costă?",
+      answer:
+        "Prețul e adaptat geografic (MD/RO/UE): FREE $0; SIMPLU 2.99$/4.99$/6.99$ (1 sesiune voce de 5min); PLUS 6.99$/9.99$/14.99$ (5×5min); AVANSAT 17.99$/24.99$/34.99$ (20×5min).",
+    },
+    {
+      question: "Cum funcționează waitlist-ul?",
+      answer:
+        "Are 3 niveluri: Fondator (primii 100 înscriși), Pioneer (101–500), Early Adopter (501–1000). După poziția 1000, înscrierile rămân deschise, doar fără etichetă de tier.",
+    },
+    {
+      question: "În ce limbi e disponibil?",
+      answer: "Momentan spocoi funcționează live în română și engleză.",
+    },
+    {
+      question: "Cum mă dezabonez de la email?",
+      answer:
+        "Fiecare email are un link de dezabonare în footer — un click și nu mai primești nimic. Sau scrie-ne oricând la hello@spocoi.com.",
+    },
+  ],
+  en: [
+    {
+      question: "What is spocoi?",
+      answer:
+        "spocoi is an AI emotional-support platform (voice/text) for Moldova, Romania and the EU diaspora — an accessible, 24/7 alternative to traditional therapy. Not yet launched; currently waitlist only.",
+    },
+    {
+      question: "How much does it cost?",
+      answer:
+        "Pricing is geo-adaptive (MD/RO/EU): FREE $0; SIMPLU $2.99/$4.99/$6.99 (1×5min voice session); PLUS $6.99/$9.99/$14.99 (5×5min); AVANSAT $17.99/$24.99/$34.99 (20×5min).",
+    },
+    {
+      question: "How does the waitlist work?",
+      answer:
+        "3 tiers: Founder (first 100 signups), Pioneer (101–500), Early Adopter (501–1000). After position 1000, signups stay open with no tier label.",
+    },
+    {
+      question: "What languages are supported?",
+      answer: "spocoi currently runs live in Romanian and English.",
+    },
+    {
+      question: "How do I unsubscribe from emails?",
+      answer:
+        "Every email has an unsubscribe link in the footer — one click and you're out. Or email us anytime at hello@spocoi.com.",
+    },
+  ],
+} as const;
+
 // Hidden on /chat (the actual product's AI conversation — a second chat
 // bubble there is redundant and confusing) and /admin (internal tool, not
 // visitor-facing).
@@ -37,6 +96,7 @@ const HIDDEN_PATH_SEGMENTS = ["/chat", "/admin"];
 export function SupportChatWidget({ locale }: { locale: Locale }) {
   const pathname = usePathname();
   const t = COPY[locale] ?? COPY.ro;
+  const quickReplies = QUICK_REPLIES[locale] ?? QUICK_REPLIES.ro;
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -80,6 +140,14 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
     }
   }
 
+  function sendQuickReply(question: string, answer: string) {
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: question },
+      { role: "assistant", content: answer },
+    ]);
+  }
+
   if (hidden) return null;
 
   return (
@@ -105,6 +173,20 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
             <div className="max-w-[85%] rounded-xl bg-paper px-3 py-2 text-sm text-ink">
               {t.greeting}
             </div>
+            {messages.length === 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {quickReplies.map((qr) => (
+                  <button
+                    key={qr.question}
+                    type="button"
+                    onClick={() => sendQuickReply(qr.question, qr.answer)}
+                    className="rounded-full border border-line bg-paper px-3 py-1.5 text-xs text-ink-soft hover:border-brand hover:text-ink"
+                  >
+                    {qr.question}
+                  </button>
+                ))}
+              </div>
+            )}
             {messages.map((m, i) => (
               <div
                 key={i}
