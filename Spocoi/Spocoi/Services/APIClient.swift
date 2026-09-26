@@ -44,6 +44,14 @@ final class APIClient {
         try await send(path, method: "POST", body: body, token: token)
     }
 
+    func patch<T: Decodable, B: Encodable>(_ path: String, body: B, token: String) async throws -> T {
+        try await send(path, method: "PATCH", body: body, token: token)
+    }
+
+    func delete<T: Decodable>(_ path: String, token: String) async throws -> T {
+        try await send(path, method: "DELETE", body: Optional<EmptyBody>.none, token: token)
+    }
+
     private func send<T: Decodable, B: Encodable>(
         _ path: String,
         method: String,

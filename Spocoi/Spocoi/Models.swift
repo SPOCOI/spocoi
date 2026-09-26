@@ -67,3 +67,27 @@ struct MoodState: Codable {
 struct MoodCheckinBody: Encodable {
     let value: String
 }
+
+struct MemoryEntry: Codable, Identifiable, Equatable {
+    let id: String
+    let category: String
+    let content: String
+    let createdAt: String
+}
+
+struct AccountProfile: Codable {
+    let email: String?
+    let displayName: String?
+    let tier: String // "free" | "simplu" | "plus" | "avansat"
+    let personalizationEnabled: Bool
+    let memoryEntries: [MemoryEntry]
+}
+
+struct AccountUpdateBody: Encodable {
+    var displayName: String?
+    var personalizationEnabled: Bool?
+}
+
+struct StatusResponse: Codable {
+    let status: String
+}

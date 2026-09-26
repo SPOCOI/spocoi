@@ -115,26 +115,30 @@ final class AuthStore {
     // MARK: - Authenticated requests (auto-refresh once on 401)
 
     func authorizedGet<T: Decodable>(_ path: String) async throws -> T {
-        guard let token = accessToken else { throw APIError.unauthorized }
-        do {
-            return try await APIClient.shared.get(path, token: token)
-        } catch APIError.unauthorized {
-            guard await refreshSession(), let newToken = accessToken else {
-                throw APIError.unauthorized
-            }
-            return try await APIClient.shared.get(path, token: newToken)
-        }
+        try await withTokenRefresh { token in try await APIClient.shared.get(path, token: token) }
     }
 
     func authorizedPost<T: Decodable, B: Encodable>(_ path: String, body: B) async throws -> T {
+        try await withTokenRefresh { token in try await APIClient.shared.post(path, body: body, token: token) }
+    }
+
+    func authorizedPatch<T: Decodable, B: Encodable>(_ path: String, body: B) async throws -> T {
+        try await withTokenRefresh { token in try await APIClient.shared.patch(path, body: body, token: token) }
+    }
+
+    func authorizedDelete<T: Decodable>(_ path: String) async throws -> T {
+        try await withTokenRefresh { token in try await APIClient.shared.delete(path, token: token) }
+    }
+
+    private func withTokenRefresh<T>(_ call: (String) async throws -> T) async throws -> T {
         guard let token = accessToken else { throw APIError.unauthorized }
         do {
-            return try await APIClient.shared.post(path, body: body, token: token)
+            return try await call(token)
         } catch APIError.unauthorized {
             guard await refreshSession(), let newToken = accessToken else {
                 throw APIError.unauthorized
             }
-            return try await APIClient.shared.post(path, body: body, token: newToken)
+            return try await call(newToken)
         }
     }
 }
