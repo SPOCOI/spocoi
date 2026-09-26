@@ -16,7 +16,7 @@ struct SpocoiHeader: View {
                 )
                 .clipShape(Circle())
             Text("spocoi")
-                .font(.headline.bold())
+                .font(.poppins(.bold, size: 20))
                 .foregroundStyle(Color.spocoiInk)
             Spacer()
         }
