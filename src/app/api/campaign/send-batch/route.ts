@@ -22,9 +22,15 @@ async function resolveBatchSize(db: ReturnType<typeof supabaseAdmin>): Promise<n
 
   if (!firstSent?.sent_at) return WARMUP_SCHEDULE[0];
 
-  const daysSinceStart = Math.floor(
-    (Date.now() - new Date(firstSent.sent_at).getTime()) / (24 * 60 * 60 * 1000)
-  );
+  // Calendar-day difference, not elapsed hours — the cron fires at a fixed
+  // UTC hour every day, which is earlier in the day than the exact clock time
+  // of the first send, so an elapsed-hours count would never reach a full 24h
+  // multiple at cron time and would silently lag the ramp by an extra day.
+  const first = new Date(firstSent.sent_at);
+  const firstDayUTC = Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), first.getUTCDate());
+  const now = new Date();
+  const todayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const daysSinceStart = Math.round((todayUTC - firstDayUTC) / (24 * 60 * 60 * 1000));
   const dayIndex = Math.min(daysSinceStart, WARMUP_SCHEDULE.length - 1);
   return WARMUP_SCHEDULE[dayIndex];
 }
