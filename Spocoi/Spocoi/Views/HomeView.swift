@@ -15,19 +15,25 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     SpocoiHeader()
 
-                    Text("Bună!")
+                    Text(greeting)
                         .font(.title.bold())
                         .foregroundStyle(Color.spocoiInk)
 
-                    PhaseIndicator(phase: moodState?.phase ?? 0)
+                    VStack(spacing: 6) {
+                        MoonPhaseView(phase: moodState?.phase ?? 0, size: 72)
+                        if let moodState {
+                            Text("faza \(moodState.phase) din 6" + (moodState.trend != nil ? " · \(trendWord(moodState.trend))" : ""))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
 
                     if let moodState {
                         if !moodState.checkedInToday {
                             moodCheckinCard
                         } else {
-                            Text(trendLabel(moodState.trend))
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            statusCard(trendLabel(moodState.trend))
                         }
                     }
 
@@ -78,11 +84,40 @@ struct HomeView: View {
         .disabled(isSubmitting)
     }
 
+    @ViewBuilder
+    private func statusCard(_ text: String) -> some View {
+        HStack {
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(Color.spocoiInk)
+            Spacer()
+        }
+        .padding()
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var greeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<12: return "Bună dimineața"
+        case 12..<18: return "Bună ziua"
+        default: return "Bună seara"
+        }
+    }
+
+    private func trendWord(_ trend: String?) -> String {
+        switch trend {
+        case "better": "în creștere"
+        case "worse": "în scădere"
+        default: "stabil"
+        }
+    }
+
     private func trendLabel(_ trend: String?) -> String {
         switch trend {
-        case "better": "ascultă · în creștere"
-        case "worse": "ascultă · în scădere"
-        default: "ascultă"
+        case "better": "Ai spus că te simți mai bine azi — ascultă, în creștere."
+        case "worse": "Ai spus că te simți mai greu azi — suntem aici."
+        default: "Ai făcut deja check-in-ul de azi."
         }
     }
 
@@ -96,22 +131,6 @@ struct HomeView: View {
             moodState = updated
         }
         isSubmitting = false
-    }
-}
-
-/// Simplified stand-in for the web's two-circle "moon phase" SVG (0...6) —
-/// a row of dots filled up to the current phase.
-private struct PhaseIndicator: View {
-    let phase: Int
-
-    var body: some View {
-        HStack(spacing: 6) {
-            ForEach(0..<7, id: \.self) { i in
-                Circle()
-                    .fill(i <= phase ? Color.spocoiBrand : Color(.systemGray5))
-                    .frame(width: 10, height: 10)
-            }
-        }
     }
 }
 
