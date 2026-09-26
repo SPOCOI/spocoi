@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { locales, isLocale, type Locale } from "@/i18n/config";
 import { getDictionary } from "@/i18n/dictionaries";
 import { SetHtmlLang } from "@/components/SetHtmlLang";
+import { SupportChatWidget } from "@/components/SupportChatWidget";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -34,6 +35,7 @@ export default async function LocaleLayout({
     <>
       <SetHtmlLang locale={typedLocale} />
       {children}
+      <SupportChatWidget locale={typedLocale} />
     </>
   );
 }

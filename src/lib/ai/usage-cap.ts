@@ -2,16 +2,18 @@ import "server-only";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
 type Tier = "free" | "simplu" | "plus" | "avansat";
-export type UsageKind = "reply" | "memory_extraction" | "recap";
+export type UsageKind = "reply" | "memory_extraction" | "recap" | "support_chat";
 
 /**
- * $ per 1M tokens — matches CLAUDE.md's documented pricing. Only Haiku is
- * wired up today (every paid tier + memory extraction); add a row here
- * whenever a second model actually gets used (e.g. the FREE-tier
- * GPT-4o-mini routing described in CLAUDE.md, not yet implemented).
+ * $ per 1M tokens — matches CLAUDE.md's documented pricing, plus Sonnet 5 for
+ * the marketing-site support-chat widget (support-chat.ts) — a different
+ * model than the product's Haiku, so it needs its own row. Add a row here
+ * whenever another model gets used (e.g. the FREE-tier GPT-4o-mini routing
+ * described in CLAUDE.md, not yet implemented).
  */
 const PRICING: Record<string, { input: number; output: number }> = {
   "claude-haiku-4-5-20251001": { input: 1, output: 5 },
+  "claude-sonnet-5": { input: 2, output: 10 },
 };
 
 /**
