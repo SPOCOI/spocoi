@@ -23,11 +23,19 @@ private struct EmptyBody: Encodable {}
 /// carries `Authorization: Bearer <supabase-access-token>` instead.
 final class APIClient {
     static let shared = APIClient()
+    #if DEBUG
+    // Debug builds hit the local dev server (`npm run dev`, port 3000) —
+    // the Simulator shares the host Mac's network stack, so "localhost"
+    // reaches it directly. ATS exempts loopback addresses automatically,
+    // no Info.plist exception needed.
+    private let baseURL = URL(string: "http://localhost:3000/api/ios")!
+    #else
     // www, not the apex domain — spocoi.com 308-redirects to www.spocoi.com,
     // and URLSession's default redirect handling drops the Authorization
     // header on a cross-host redirect (standard security behavior), which
     // silently turned every authenticated call into an anonymous one.
     private let baseURL = URL(string: "https://www.spocoi.com/api/ios")!
+    #endif
     private init() {}
 
     private let decoder: JSONDecoder = {
