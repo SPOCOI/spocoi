@@ -12,9 +12,18 @@ import type { NextConfig } from "next";
 // Style-src keeps 'unsafe-inline' for the same reason as scripts, plus
 // several components render dynamic React `style={{...}}` attributes
 // (mood-phase shading, chart widths) that CSP has no nonce mechanism for.
+// 'unsafe-eval' is added to script-src only in development: Turbopack's
+// dev-mode HMR/runtime calls eval() to reconstruct callstacks across
+// module boundaries, and with no dev/prod split here that broke every
+// page in `npm run dev` (React logs "eval() is not supported" and
+// bails out of rendering). Production never gets 'unsafe-eval' — Next
+// itself confirms it's not needed there ("React will never use eval()
+// in production mode").
+const isDev = process.env.NODE_ENV !== "production";
+
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",

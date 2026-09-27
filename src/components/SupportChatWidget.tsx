@@ -19,6 +19,7 @@ const COPY = {
     back: "înapoi",
     menu: "meniu",
     contactHuman: "Vorbește cu un om",
+    emailCopied: "Email copiat ✓",
   },
   en: {
     bubbleLabel: "Open support chat",
@@ -32,6 +33,7 @@ const COPY = {
     back: "back",
     menu: "menu",
     contactHuman: "Talk to a human",
+    emailCopied: "Email copied ✓",
   },
 } as const;
 
@@ -308,6 +310,7 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -366,6 +369,22 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
 
   const selectedCategory = categories.find((c) => c.category === activeCategory) ?? null;
 
+  // mailto: silently does nothing on a system with no default mail client
+  // configured (common — webmail-only setups), which reads as "the button
+  // is broken". Let the mailto: attempt proceed (it still works for anyone
+  // who does have a mail client) but also copy the address, so the click
+  // always visibly does something either way.
+  async function handleContactHuman() {
+    try {
+      await navigator.clipboard.writeText("hello@spocoi.com");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable (e.g. insecure context) — mailto: is the
+      // only fallback left, silently let it proceed.
+    }
+  }
+
   if (hidden) return null;
 
   return (
@@ -399,9 +418,10 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
               )}
               <a
                 href="mailto:hello@spocoi.com"
+                onClick={handleContactHuman}
                 className="whitespace-nowrap text-xs text-ink-faint hover:text-ink"
               >
-                {t.contactHuman}
+                {copied ? t.emailCopied : t.contactHuman}
               </a>
             </div>
           </div>
