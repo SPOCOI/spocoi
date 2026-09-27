@@ -1,11 +1,11 @@
 import SwiftUI
 
 /// A real lunar-phase silhouette — a fixed half-circle edge plus a variable
-/// half-ellipse "terminator", the same construction real moon-phase icons
-/// use — instead of two overlapping full circles. The overlapping-circle
-/// version produced a flat, ellipse-chord "bite" rather than a crescent
-/// with proper pointed horns at the poles, which read as an abstract shape
-/// rather than a moon.
+/// half-ellipse "terminator", the same construction the brandbook's own
+/// moon-phase wheel uses (page 7: navy dark side, brand-yellow lit side on
+/// a full disc) — instead of two overlapping full circles, which produced
+/// a flat, ellipse-chord "bite" rather than a crescent with proper pointed
+/// horns at the poles.
 struct MoonPhaseView: View {
     let phase: Int
     var size: CGFloat = 56
@@ -14,10 +14,13 @@ struct MoonPhaseView: View {
         CGFloat(min(max(phase, 0), 6)) / 6
     }
 
-    // Fraction of the disc that's lit. Starts as a thin crescent — matching
-    // the brand mark, never a blank new moon — and grows to a full moon.
+    // Fraction of the disc that's lit. Starts exactly at the brand mark's
+    // own thinness (measured from the brandbook's primary logo: outer
+    // radius 150.5, terminator radius 68.5, ratio 0.455 → see
+    // BrandCrescent.brandIlluminatedFraction) and grows to a full moon.
     private var illuminatedFraction: CGFloat {
-        0.14 + 0.86 * progress
+        let start = BrandCrescent.brandIlluminatedFraction
+        return start + (1 - start) * progress
     }
 
     var body: some View {
@@ -25,7 +28,7 @@ struct MoonPhaseView: View {
             Circle()
                 .fill(Color.spocoiBrand)
             MoonShadowShape(illuminatedFraction: illuminatedFraction)
-                .fill(Color(.systemBackground))
+                .fill(Color.spocoiInk)
                 // Mirrored so the lit crescent sits on the left at low
                 // phases, matching the brand mark's own orientation.
                 .scaleEffect(x: -1, y: 1)
@@ -35,11 +38,32 @@ struct MoonPhaseView: View {
     }
 }
 
+/// The brandbook's primary logo / brandmark crescent (pages 3–5): a pure
+/// crescent silhouette, no disc behind it — reuses the exact same
+/// terminator-curve shape as MoonPhaseView, just filled once at the
+/// brand's fixed thinness instead of animated across phases.
+struct BrandCrescent: View {
+    /// Measured directly from the brandbook's primary logo (page 4):
+    /// outer radius 150.5pt, terminator radius 68.5pt → 68.5/150.5 = 0.455
+    /// → illuminated fraction (1 - 0.455) / 2 = 0.2725.
+    static let brandIlluminatedFraction: CGFloat = 0.2725
+    /// Width/height of the crescent's own bounding box, measured from the
+    /// same source (266×301pt) — used to avoid dead space when framing it.
+    static let aspectRatio: CGFloat = 266.0 / 301.0
+
+    var body: some View {
+        MoonShadowShape(illuminatedFraction: Self.brandIlluminatedFraction)
+            .fill(Color.spocoiBrand)
+            .scaleEffect(x: -1, y: 1)
+            .aspectRatio(Self.aspectRatio, contentMode: .fit)
+    }
+}
+
 /// The dark (unlit) part of the disc: a fixed right half-circle plus a
 /// half-ellipse whose horizontal radius and direction encode how much of
 /// the disc is lit — collapsing to nothing at a full moon, growing to a
 /// full circle at a new moon.
-private struct MoonShadowShape: Shape {
+struct MoonShadowShape: Shape {
     var illuminatedFraction: CGFloat
 
     func path(in rect: CGRect) -> Path {

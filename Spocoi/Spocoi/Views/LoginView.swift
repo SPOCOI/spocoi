@@ -15,18 +15,12 @@ struct LoginView: View {
                 Spacer()
 
                 VStack(spacing: 4) {
-                    Circle()
-                        .fill(Color.spocoiBrand)
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Circle()
-                                .fill(.white)
-                                .frame(width: 30, height: 30)
-                                .offset(x: 10, y: -3)
-                        )
-                        .clipShape(Circle())
+                    Image("BrandMark")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 35, height: 40)
                     Text("spocoi")
-                        .font(.title2.bold())
+                        .font(.poppins(.bold, size: 22))
                         .foregroundStyle(Color.spocoiInk)
                 }
                 .padding(.bottom, 16)

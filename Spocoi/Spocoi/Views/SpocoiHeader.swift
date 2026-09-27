@@ -5,16 +5,10 @@ import SwiftUI
 struct SpocoiHeader: View {
     var body: some View {
         HStack(spacing: 8) {
-            Circle()
-                .fill(Color.spocoiBrand)
-                .frame(width: 22, height: 22)
-                .overlay(
-                    Circle()
-                        .fill(.white)
-                        .frame(width: 16, height: 16)
-                        .offset(x: 5, y: -2)
-                )
-                .clipShape(Circle())
+            Image("BrandMark")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 19, height: 22)
             Text("spocoi")
                 .font(.poppins(.bold, size: 20))
                 .foregroundStyle(Color.spocoiInk)
