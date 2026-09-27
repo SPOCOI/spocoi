@@ -10,6 +10,20 @@ import { getClientIp, getOrCreateDeviceId, isRateLimited, recordRateLimitEvent }
 // keep these in sync; bump both together when the wording changes.
 const CONSENT_POLICY_VERSION = "2026-09-18";
 
+// Terms page (src/app/[locale]/(marketing)/legal/terms) states 16 as the
+// minimum age — kept in sync with that copy, not the old 13/18 contradiction
+// from the lost prototype (see CLAUDE.md).
+const MINIMUM_AGE = 16;
+
+function computeAge(birthDate: Date, now: Date): number {
+  let age = now.getFullYear() - birthDate.getFullYear();
+  const monthDiff = now.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < birthDate.getDate())) {
+    age -= 1;
+  }
+  return age;
+}
+
 export async function POST(request: NextRequest) {
   let body: unknown;
   try {
@@ -18,21 +32,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid-json" }, { status: 400 });
   }
 
-  const { email, password, ageConfirmed, specialCategoryConsent } = (body ?? {}) as {
+  const { email, password, birthDate, specialCategoryConsent } = (body ?? {}) as {
     email?: unknown;
     password?: unknown;
-    ageConfirmed?: unknown;
+    birthDate?: unknown;
     specialCategoryConsent?: unknown;
   };
 
-  if (typeof email !== "string" || typeof password !== "string") {
+  if (typeof email !== "string" || typeof password !== "string" || typeof birthDate !== "string") {
     return NextResponse.json({ error: "invalid-body" }, { status: 400 });
   }
 
-  // Required, not accepted-by-default — age attestation (no other age check
-  // exists) and explicit Art. 9(2)(a) consent to process health-adjacent
-  // data. Mirrors the same rule in the web signUp action.
-  if (ageConfirmed !== true || specialCategoryConsent !== true) {
+  const parsedBirthDate = new Date(birthDate);
+  if (Number.isNaN(parsedBirthDate.getTime())) {
+    return NextResponse.json({ error: "invalid-body" }, { status: 400 });
+  }
+
+  // A real birth date replaces a bare self-attestation checkbox — but the
+  // user still types it in, so it's still self-reported, not verified
+  // against an ID. The Terms page carries the liability clause for that.
+  if (computeAge(parsedBirthDate, new Date()) < MINIMUM_AGE || specialCategoryConsent !== true) {
     return NextResponse.json({ status: "consent-required" });
   }
 
@@ -66,7 +85,10 @@ export async function POST(request: NextRequest) {
 
     const { country } = geolocation(request);
     const region = resolveRegion(country);
-    await supabaseAdmin().from("profiles").update({ region }).eq("id", data.user.id);
+    await supabaseAdmin()
+      .from("profiles")
+      .update({ region, birth_date: birthDate })
+      .eq("id", data.user.id);
   }
 
   if (!data.session) {

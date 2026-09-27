@@ -8,6 +8,10 @@ struct ChatMessage: Codable, Identifiable, Equatable {
     let createdAt: String
 }
 
+struct EmptyResponse: Codable {
+    let status: String
+}
+
 struct AuthResponse: Codable {
     let status: String
     let accessToken: String?
@@ -36,13 +40,34 @@ struct SendMessageResponse: Codable {
 struct SignupBody: Encodable {
     let email: String
     let password: String
-    let ageConfirmed: Bool
+    let birthDate: String // "yyyy-MM-dd"
     let specialCategoryConsent: Bool
 }
 
 struct SigninBody: Encodable {
     let email: String
     let password: String
+}
+
+struct OtpRequestBody: Encodable {
+    let email: String
+}
+
+struct OtpVerifyBody: Encodable {
+    let email: String
+    let token: String
+}
+
+struct AppleSigninBody: Encodable {
+    let identityToken: String
+    let nonce: String
+}
+
+struct EmptyEncodable: Encodable {}
+
+struct OAuthStartResponse: Codable {
+    let status: String
+    let url: String?
 }
 
 struct RefreshBody: Encodable {

@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import AuthenticationServices
 
 @Observable
 final class AuthStore {
@@ -26,7 +27,15 @@ final class AuthStore {
         _ = await refreshSession()
     }
 
-    func signUp(email: String, password: String, ageConfirmed: Bool, specialCategoryConsent: Bool) async {
+    private static let birthDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        return formatter
+    }()
+
+    func signUp(email: String, password: String, birthDate: Date, specialCategoryConsent: Bool) async {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -34,7 +43,7 @@ final class AuthStore {
             let body = SignupBody(
                 email: email,
                 password: password,
-                ageConfirmed: ageConfirmed,
+                birthDate: Self.birthDateFormatter.string(from: birthDate),
                 specialCategoryConsent: specialCategoryConsent
             )
             let response: AuthResponse = try await APIClient.shared.post("auth/signup", body: body)
@@ -53,6 +62,101 @@ final class AuthStore {
             let response: AuthResponse = try await APIClient.shared.post("auth/signin", body: body)
             handle(response)
         } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? "A apărut o eroare."
+        }
+    }
+
+    /// Passwordless login, step 1: ask Supabase to email a 6-digit code to
+    /// an *existing* user (the backend passes shouldCreateUser: false).
+    func requestEmailCode(email: String) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            let _: EmptyResponse = try await APIClient.shared.post("auth/otp/request", body: OtpRequestBody(email: email))
+            return true
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? "A apărut o eroare."
+            return false
+        }
+    }
+
+    /// Passwordless login, step 2: exchange the emailed code for a session.
+    func verifyEmailCode(email: String, code: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            let response: AuthResponse = try await APIClient.shared.post(
+                "auth/otp/verify",
+                body: OtpVerifyBody(email: email, token: code)
+            )
+            handle(response)
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? "A apărut o eroare."
+        }
+    }
+
+    func signInWithApple(identityToken: String, nonce: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            let response: AuthResponse = try await APIClient.shared.post(
+                "auth/apple",
+                body: AppleSigninBody(identityToken: identityToken, nonce: nonce)
+            )
+            handle(response)
+        } catch {
+            errorMessage = (error as? LocalizedError)?.errorDescription ?? "A apărut o eroare."
+        }
+    }
+
+    /// Implicit-flow OAuth: the callback URL carries the finished Supabase
+    /// session directly in its fragment, so there's no separate token
+    /// exchange call — see the comment on auth/oauth/google/start/route.ts.
+    func signInWithGoogle() async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            let start: OAuthStartResponse = try await APIClient.shared.post("auth/oauth/google/start", body: EmptyEncodable())
+            guard start.status == "ok", let urlString = start.url, let url = URL(string: urlString) else {
+                errorMessage = "Nu am putut porni conectarea cu Google."
+                return
+            }
+
+            let callbackURL = try await OAuthWebSession.authenticate(url: url, callbackScheme: "spocoi")
+
+            guard let fragment = callbackURL.fragment else {
+                errorMessage = "Răspuns invalid de la Google."
+                return
+            }
+            var params: [String: String] = [:]
+            for pair in fragment.split(separator: "&") {
+                let parts = pair.split(separator: "=", maxSplits: 1).map(String.init)
+                guard parts.count == 2 else { continue }
+                params[parts[0]] = parts[1].removingPercentEncoding ?? parts[1]
+            }
+
+            guard let access = params["access_token"], let refresh = params["refresh_token"] else {
+                errorMessage = params["error_description"]?.replacingOccurrences(of: "+", with: " ")
+                    ?? "Nu am primit un token valid de la Google."
+                return
+            }
+
+            accessToken = access
+            refreshToken = refresh
+            KeychainStore.set(access, for: accessTokenKey)
+            KeychainStore.set(refresh, for: refreshTokenKey)
+        } catch is CancellationError {
+            // User dismissed the browser sheet — not an error.
+        } catch {
+            let nsError = error as NSError
+            if nsError.domain == ASWebAuthenticationSessionErrorDomain,
+               nsError.code == ASWebAuthenticationSessionError.canceledLogin.rawValue {
+                return
+            }
             errorMessage = (error as? LocalizedError)?.errorDescription ?? "A apărut o eroare."
         }
     }

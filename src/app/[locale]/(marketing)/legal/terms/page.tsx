@@ -34,7 +34,7 @@ export default async function TermsPage({
       region={region}
       locale={locale}
       title={t.termsTitle}
-      updated={locale === "en" ? "September 12, 2026" : "12 septembrie 2026"}
+      updated={locale === "en" ? "September 27, 2026" : "27 septembrie 2026"}
     >
       {locale === "en" ? (
         <>
@@ -62,6 +62,15 @@ export default async function TermsPage({
             account. Notify us immediately at{" "}
             <a href="mailto:support@spocoi.co">support@spocoi.co</a> if you
             suspect unauthorized access to your account.
+          </p>
+          <p>
+            You are solely responsible for the accuracy of the information
+            you provide when creating your account, including your date of
+            birth. spocoi does not verify this information against an
+            identity document, and any incorrect or false information you
+            provide — including, without limitation, an incorrectly stated
+            age — remains entirely your responsibility, along with any
+            consequences that follow from it.
           </p>
 
           <h2>Subscriptions and payments</h2>
@@ -193,6 +202,15 @@ export default async function TermsPage({
             Anunță-ne imediat la{" "}
             <a href="mailto:support@spocoi.co">support@spocoi.co</a> dacă
             suspectezi acces neautorizat la contul tău.
+          </p>
+          <p>
+            Ești singurul responsabil pentru corectitudinea informațiilor pe
+            care le furnizezi la crearea contului, inclusiv data nașterii.
+            spocoi nu verifică aceste informații împotriva unui document de
+            identitate, iar orice informație eronată sau falsă furnizată de
+            tine — inclusiv, dar fără a se limita la, o vârstă declarată
+            incorect — rămâne în întregime pe răspunderea ta, împreună cu
+            toate consecințele care decurg din aceasta.
           </p>
 
           <h2>Abonamente și plăți</h2>

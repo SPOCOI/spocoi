@@ -3,6 +3,7 @@ import SwiftUI
 struct AccountView: View {
     @Environment(AuthStore.self) private var authStore
     @AppStorage(AppearanceMode.storageKey) private var appearanceModeRaw = AppearanceMode.system.rawValue
+    @State private var legalScreen: LegalDocument?
 
     var body: some View {
         NavigationStack {
@@ -47,8 +48,8 @@ struct AccountView: View {
                 }
 
                 Section("Confidențialitate") {
-                    Link("Termeni și condiții", destination: URL(string: "https://www.spocoi.com/ro/legal/terms")!)
-                    Link("Politica de confidențialitate", destination: URL(string: "https://www.spocoi.com/ro/legal/privacy")!)
+                    Button("Termeni și condiții") { legalScreen = .terms }
+                    Button("Politica de confidențialitate") { legalScreen = .privacy }
                 }
 
                 Section {
@@ -60,6 +61,29 @@ struct AccountView: View {
                 }
             }
             .navigationTitle("Cont")
+            .sheet(item: $legalScreen) { document in
+                LegalWebScreen(title: document.title, url: document.url)
+            }
+        }
+    }
+}
+
+enum LegalDocument: String, Identifiable {
+    case terms, privacy
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .terms: "Termeni și condiții"
+        case .privacy: "Confidențialitate"
+        }
+    }
+
+    var url: URL {
+        switch self {
+        case .terms: URL(string: "https://www.spocoi.com/ro/legal/terms")!
+        case .privacy: URL(string: "https://www.spocoi.com/ro/legal/privacy")!
         }
     }
 }
