@@ -2,7 +2,7 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-admin";
 
-export type RateLimitKind = "signup" | "waitlist" | "pricing_test";
+export type RateLimitKind = "signup" | "waitlist" | "pricing_test" | "contact";
 
 /**
  * Sliding-window caps, not a lifetime total — a shared home/office network
@@ -14,6 +14,7 @@ const LIMITS: Record<RateLimitKind, { windowMs: number; max: number }> = {
   signup: { windowMs: 24 * 60 * 60 * 1000, max: 3 },
   waitlist: { windowMs: 60 * 60 * 1000, max: 5 },
   pricing_test: { windowMs: 60 * 60 * 1000, max: 3 },
+  contact: { windowMs: 60 * 60 * 1000, max: 3 },
 };
 
 const DEVICE_COOKIE_NAME = "spocoi-device";

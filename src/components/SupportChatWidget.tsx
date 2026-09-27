@@ -19,7 +19,15 @@ const COPY = {
     back: "înapoi",
     menu: "meniu",
     contactHuman: "Vorbește cu un om",
-    emailCopied: "Email copiat ✓",
+    contactIntro: "Scrie-ne mesajul aici — răspundem direct pe email, la adresa ta.",
+    contactEmailPlaceholder: "Emailul tău",
+    contactMessagePlaceholder: "Mesajul tău...",
+    contactSend: "Trimite mesajul",
+    contactSending: "Se trimite...",
+    contactSent: "Trimis! Îți răspundem cât de curând, pe email.",
+    contactError: "Nu am putut trimite mesajul. Încearcă din nou sau scrie-ne la hello@spocoi.com.",
+    contactRateLimited: "Ai trimis deja câteva mesaje — încearcă din nou peste puțin timp.",
+    contactInvalid: "Verifică adresa de email și scrie un mesaj înainte de a trimite.",
   },
   en: {
     bubbleLabel: "Open support chat",
@@ -33,7 +41,15 @@ const COPY = {
     back: "back",
     menu: "menu",
     contactHuman: "Talk to a human",
-    emailCopied: "Email copied ✓",
+    contactIntro: "Write your message here — we'll reply directly to your email.",
+    contactEmailPlaceholder: "Your email",
+    contactMessagePlaceholder: "Your message...",
+    contactSend: "Send message",
+    contactSending: "Sending...",
+    contactSent: "Sent! We'll get back to you by email shortly.",
+    contactError: "Couldn't send your message. Try again or email hello@spocoi.com.",
+    contactRateLimited: "You've sent a few messages already — try again in a bit.",
+    contactInvalid: "Check your email address and write a message before sending.",
   },
 } as const;
 
@@ -310,7 +326,12 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
+  const [contactStatus, setContactStatus] = useState<
+    "idle" | "sending" | "sent" | "error" | "rate-limited" | "invalid"
+  >("idle");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -369,19 +390,38 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
 
   const selectedCategory = categories.find((c) => c.category === activeCategory) ?? null;
 
-  // mailto: silently does nothing on a system with no default mail client
-  // configured (common — webmail-only setups), which reads as "the button
-  // is broken". Let the mailto: attempt proceed (it still works for anyone
-  // who does have a mail client) but also copy the address, so the click
-  // always visibly does something either way.
-  async function handleContactHuman() {
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // A mailto: link silently does nothing on a system with no default mail
+  // client configured (common — webmail-only setups), which reads as "the
+  // button is broken". Collecting the message right here and emailing it
+  // server-side (reply-to set to the visitor's address) means replying is
+  // just hitting "Reply" in the team inbox — no dashboard, no new system.
+  async function sendContactMessage() {
+    if (!EMAIL_RE.test(contactEmail.trim()) || contactMessage.trim().length === 0) {
+      setContactStatus("invalid");
+      return;
+    }
+    setContactStatus("sending");
     try {
-      await navigator.clipboard.writeText("hello@spocoi.com");
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      const response = await fetch("/api/contact-human", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: contactEmail.trim(), message: contactMessage.trim() }),
+      });
+      const data = (await response.json()) as { status: string };
+      if (data.status === "ok") {
+        setContactStatus("sent");
+        setContactMessage("");
+      } else if (data.status === "rate-limited") {
+        setContactStatus("rate-limited");
+      } else if (data.status === "invalid") {
+        setContactStatus("invalid");
+      } else {
+        setContactStatus("error");
+      }
     } catch {
-      // Clipboard API unavailable (e.g. insecure context) — mailto: is the
-      // only fallback left, silently let it proceed.
+      setContactStatus("error");
     }
   }
 
@@ -416,16 +456,74 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
                   ↺ {t.menu}
                 </button>
               )}
-              <a
-                href="mailto:hello@spocoi.com"
-                onClick={handleContactHuman}
+              <button
+                type="button"
+                onClick={() => {
+                  setContactOpen(true);
+                  setContactStatus("idle");
+                }}
                 className="whitespace-nowrap text-xs text-ink-faint hover:text-ink"
               >
-                {copied ? t.emailCopied : t.contactHuman}
-              </a>
+                {t.contactHuman}
+              </button>
             </div>
           </div>
 
+          {contactOpen && (
+            <div className="flex flex-1 flex-col overflow-y-auto px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setContactOpen(false)}
+                className="mb-3 self-start text-xs text-ink-faint hover:text-ink"
+              >
+                ← {t.back}
+              </button>
+
+              {contactStatus === "sent" ? (
+                <div className="rounded-xl bg-paper px-3 py-3 text-sm text-ink">
+                  {t.contactSent}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2.5">
+                  <p className="text-sm text-ink-soft">{t.contactIntro}</p>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder={t.contactEmailPlaceholder}
+                    className="rounded-full border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+                  />
+                  <textarea
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                    placeholder={t.contactMessagePlaceholder}
+                    maxLength={4000}
+                    rows={4}
+                    className="resize-none rounded-2xl border border-line bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brand"
+                  />
+                  {contactStatus === "invalid" && (
+                    <p className="text-xs text-red-600">{t.contactInvalid}</p>
+                  )}
+                  {contactStatus === "error" && (
+                    <p className="text-xs text-red-600">{t.contactError}</p>
+                  )}
+                  {contactStatus === "rate-limited" && (
+                    <p className="text-xs text-red-600">{t.contactRateLimited}</p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={sendContactMessage}
+                    disabled={contactStatus === "sending"}
+                    className="rounded-full bg-brand px-4 py-2 text-sm font-medium text-ink disabled:opacity-50"
+                  >
+                    {contactStatus === "sending" ? t.contactSending : t.contactSend}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!contactOpen && (
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
             <div className="max-w-[85%] rounded-xl bg-paper px-3 py-2 text-sm text-ink">
               {t.greeting}
@@ -485,7 +583,9 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
               </div>
             )}
           </div>
+          )}
 
+          {!contactOpen && (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -508,6 +608,7 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
               {t.send}
             </button>
           </form>
+          )}
         </div>
       )}
 
