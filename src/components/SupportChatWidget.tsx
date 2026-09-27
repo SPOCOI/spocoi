@@ -17,6 +17,8 @@ const COPY = {
     error: "A apărut o eroare. Încearcă din nou sau scrie-ne la hello@spocoi.com.",
     capExceeded: "Chat-ul e temporar indisponibil — scrie-ne direct la hello@spocoi.com.",
     back: "înapoi",
+    menu: "meniu",
+    contactHuman: "Vorbește cu un om",
   },
   en: {
     bubbleLabel: "Open support chat",
@@ -28,6 +30,8 @@ const COPY = {
     error: "Something went wrong. Try again or email hello@spocoi.com.",
     capExceeded: "Chat is temporarily unavailable — email us directly at hello@spocoi.com.",
     back: "back",
+    menu: "menu",
+    contactHuman: "Talk to a human",
   },
 } as const;
 
@@ -352,6 +356,14 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
     setActiveCategory(null);
   }
 
+  // Once real messages exist, the category chips are gone for good with no
+  // way back — this returns to the category list without losing the
+  // conversation (closing/reopening the widget doesn't reset it either).
+  function resetToMenu() {
+    setMessages([]);
+    setActiveCategory(null);
+  }
+
   const selectedCategory = categories.find((c) => c.category === activeCategory) ?? null;
 
   if (hidden) return null;
@@ -360,19 +372,38 @@ export function SupportChatWidget({ locale }: { locale: Locale }) {
     <div className="fixed bottom-5 right-5 z-50">
       {open && (
         <div className="mb-3 flex h-[28rem] w-[22rem] max-w-[calc(100vw-2.5rem)] flex-col overflow-hidden rounded-2xl border border-line bg-surface shadow-xl">
-          <div className="flex items-center justify-between border-b border-line px-4 py-3">
-            <div>
-              <p className="text-sm font-semibold text-ink">{t.title}</p>
-              <p className="text-xs text-ink-faint">{t.subtitle}</p>
+          <div className="border-b border-line">
+            <div className="flex items-center justify-between px-4 pt-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-ink">{t.title}</p>
+                <p className="truncate text-xs text-ink-faint">{t.subtitle}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="close"
+                className="shrink-0 pl-3 text-ink-faint hover:text-ink"
+              >
+                ✕
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="close"
-              className="text-ink-faint hover:text-ink"
-            >
-              ✕
-            </button>
+            <div className="flex items-center gap-3 px-4 pb-2 pt-1.5">
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={resetToMenu}
+                  className="whitespace-nowrap text-xs text-ink-faint hover:text-ink"
+                >
+                  ↺ {t.menu}
+                </button>
+              )}
+              <a
+                href="mailto:hello@spocoi.com"
+                className="whitespace-nowrap text-xs text-ink-faint hover:text-ink"
+              >
+                {t.contactHuman}
+              </a>
+            </div>
           </div>
 
           <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
