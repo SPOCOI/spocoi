@@ -458,6 +458,49 @@ export async function getCampaignRecipientsForDay(
   }));
 }
 
+export type SiteVisitStats = {
+  total: number;
+  today: number;
+  last7d: number;
+  last30d: number;
+};
+
+export async function getSiteVisitStats(): Promise<SiteVisitStats | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_site_visits_stats");
+  if (error || !data) return null;
+
+  return data as SiteVisitStats;
+}
+
+export async function getSiteVisitDailyTrend(): Promise<number[] | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_site_visits_daily");
+  if (error || !data) return null;
+
+  return data as number[];
+}
+
+export type SiteVisitBreakdown = {
+  topPages: { path: string; count: number }[];
+  topCountries: { country: string; count: number }[];
+  deviceCounts: Record<string, number>;
+};
+
+export async function getSiteVisitBreakdown(): Promise<SiteVisitBreakdown | null> {
+  const adminEmail = await requireAdminEmail();
+  if (!adminEmail) return null;
+
+  const { data, error } = await supabaseAdmin().rpc("admin_site_visits_breakdown");
+  if (error || !data) return null;
+
+  return data as SiteVisitBreakdown;
+}
+
 export async function listGrants(): Promise<AdminGrant[] | null> {
   const adminEmail = await requireAdminEmail();
   if (!adminEmail) return null;

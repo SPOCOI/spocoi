@@ -7,6 +7,7 @@ const TABS = [
   { key: "users", label: "Utilizatori" },
   { key: "grants", label: "Acces manual" },
   { key: "campaign", label: "Campanie" },
+  { key: "trafic", label: "Trafic" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -16,11 +17,13 @@ export function AdminTabs({
   users,
   grants,
   campaign,
+  trafic,
 }: {
   overview: React.ReactNode;
   users: React.ReactNode;
   grants: React.ReactNode;
   campaign: React.ReactNode;
+  trafic: React.ReactNode;
 }) {
   const [tab, setTab] = useState<TabKey>("overview");
 
@@ -48,6 +51,7 @@ export function AdminTabs({
         {tab === "users" && users}
         {tab === "grants" && grants}
         {tab === "campaign" && campaign}
+        {tab === "trafic" && trafic}
       </div>
     </div>
   );

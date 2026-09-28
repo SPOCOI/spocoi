@@ -9,6 +9,7 @@ import { AdminUserTable } from "@/components/AdminUserTable";
 import { AdminTabs } from "@/components/AdminTabs";
 import { AdminPricingTest } from "@/components/AdminPricingTest";
 import { AdminCampaignStats } from "@/components/AdminCampaignStats";
+import { AdminSiteVisits } from "@/components/AdminSiteVisits";
 import {
   isCurrentUserAdmin,
   listGrants,
@@ -19,6 +20,9 @@ import {
   getPricingTestResults,
   getCampaignStats,
   getCampaignDailyStats,
+  getSiteVisitStats,
+  getSiteVisitDailyTrend,
+  getSiteVisitBreakdown,
   listUsers,
 } from "@/app/actions/admin";
 import { isLocale, localizedHref, defaultLocale, type Locale } from "@/i18n/config";
@@ -51,6 +55,9 @@ export default async function AdminPage({
     pricingTest,
     campaignStats,
     campaignDailyStats,
+    siteVisitStats,
+    siteVisitDaily,
+    siteVisitBreakdown,
   ] = await Promise.all([
     listGrants(),
     getOverviewStats(),
@@ -61,6 +68,9 @@ export default async function AdminPage({
     getPricingTestResults(),
     getCampaignStats(),
     getCampaignDailyStats(),
+    getSiteVisitStats(),
+    getSiteVisitDailyTrend(),
+    getSiteVisitBreakdown(),
   ]);
 
   return (
@@ -98,6 +108,13 @@ export default async function AdminPage({
             }
             grants={<AdminGrantForm initialGrants={grants ?? []} />}
             campaign={<AdminCampaignStats stats={campaignStats} dailyStats={campaignDailyStats} />}
+            trafic={
+              <AdminSiteVisits
+                stats={siteVisitStats}
+                daily={siteVisitDaily}
+                breakdown={siteVisitBreakdown}
+              />
+            }
           />
         </div>
       </div>

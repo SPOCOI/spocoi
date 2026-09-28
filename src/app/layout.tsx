@@ -1,6 +1,7 @@
 import { Poppins } from "next/font/google";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
+import { SiteVisitTracker } from "@/components/SiteVisitTracker";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-screen font-sans antialiased">
         {children}
         <Analytics />
+        <SiteVisitTracker />
       </body>
     </html>
   );
