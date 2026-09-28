@@ -3,6 +3,9 @@ import SwiftUI
 struct AccountView: View {
     @Environment(AuthStore.self) private var authStore
     @AppStorage(AppearanceMode.storageKey) private var appearanceModeRaw = AppearanceMode.system.rawValue
+    @AppStorage("spocoi.dailyReminderEnabled") private var reminderEnabled = false
+    @AppStorage("spocoi.dailyReminderHour") private var reminderHour = 20
+    @AppStorage("spocoi.dailyReminderMinute") private var reminderMinute = 0
     @State private var legalScreen: LegalDocument?
 
     var body: some View {
@@ -28,6 +31,7 @@ struct AccountView: View {
                         profileCard
                         subscriptionCard
                         appearanceCard
+                        reminderCard
                         privacyCard
 
                         Button(role: .destructive) {
@@ -91,7 +95,7 @@ struct AccountView: View {
                     .foregroundStyle(.secondary)
             }
             Divider()
-            Link(destination: URL(string: "https://spocoi.com/pricing")!) {
+            Button { legalScreen = .pricing } label: {
                 HStack {
                     Text("Vezi planurile")
                         .font(.poppins(.medium, size: 15))
@@ -112,6 +116,58 @@ struct AccountView: View {
                 }
             }
             .pickerStyle(.segmented)
+        }
+    }
+
+    private var reminderTimeBinding: Binding<Date> {
+        Binding(
+            get: {
+                Calendar.current.date(bySettingHour: reminderHour, minute: reminderMinute, second: 0, of: Date()) ?? Date()
+            },
+            set: { newValue in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
+                reminderHour = components.hour ?? 20
+                reminderMinute = components.minute ?? 0
+                if reminderEnabled {
+                    NotificationScheduler.scheduleDailyReminder(hour: reminderHour, minute: reminderMinute)
+                }
+            }
+        )
+    }
+
+    private var reminderCard: some View {
+        cardSection(title: "Amintiri") {
+            Toggle("Amintire zilnică", isOn: Binding(
+                get: { reminderEnabled },
+                set: { newValue in
+                    if newValue {
+                        Task {
+                            let granted = await NotificationScheduler.requestAuthorizationIfNeeded()
+                            if granted {
+                                reminderEnabled = true
+                                NotificationScheduler.scheduleDailyReminder(hour: reminderHour, minute: reminderMinute)
+                            } else {
+                                reminderEnabled = false
+                            }
+                        }
+                    } else {
+                        reminderEnabled = false
+                        NotificationScheduler.cancelDailyReminder()
+                    }
+                }
+            ))
+            .font(.poppins(size: 15))
+            .foregroundStyle(Color.spocoiInk)
+
+            if reminderEnabled {
+                DatePicker("Ora", selection: reminderTimeBinding, displayedComponents: .hourAndMinute)
+                    .font(.poppins(size: 15))
+                    .foregroundStyle(Color.spocoiInk)
+            }
+
+            Text("Poți opri asta oricând. Nu trimitem niciodată mai mult de o notificare pe zi.")
+                .font(.poppins(size: 12))
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -159,7 +215,7 @@ struct AccountView: View {
 }
 
 enum LegalDocument: String, Identifiable {
-    case terms, privacy
+    case terms, privacy, pricing
 
     var id: String { rawValue }
 
@@ -167,6 +223,7 @@ enum LegalDocument: String, Identifiable {
         switch self {
         case .terms: "Termeni și condiții"
         case .privacy: "Confidențialitate"
+        case .pricing: "Planuri și prețuri"
         }
     }
 
@@ -174,6 +231,7 @@ enum LegalDocument: String, Identifiable {
         switch self {
         case .terms: URL(string: "https://www.spocoi.com/ro/legal/terms")!
         case .privacy: URL(string: "https://www.spocoi.com/ro/legal/privacy")!
+        case .pricing: URL(string: "https://www.spocoi.com/ro/pricing")!
         }
     }
 }

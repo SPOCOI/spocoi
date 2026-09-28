@@ -23,11 +23,11 @@ const isDev = process.env.NODE_ENV !== "production";
 
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co",
+  "connect-src 'self' https://*.supabase.co https://va.vercel-scripts.com https://vitals.vercel-insights.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

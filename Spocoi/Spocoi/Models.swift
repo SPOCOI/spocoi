@@ -92,3 +92,17 @@ struct MoodState: Codable {
 struct MoodCheckinBody: Encodable {
     let value: String
 }
+
+struct DailyRecap: Codable, Identifiable, Equatable {
+    let id: String
+    let topic: String
+    let summary: String
+}
+
+struct RecapResponse: Codable {
+    let recap: DailyRecap?
+}
+
+struct DismissRecapBody: Encodable {
+    let id: String
+}

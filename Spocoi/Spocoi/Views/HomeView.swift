@@ -7,7 +7,9 @@ struct HomeView: View {
     @Environment(AuthStore.self) private var authStore
     @Binding var selectedTab: Int
     @State private var moodState: MoodState?
+    @State private var recap: DailyRecap?
     @State private var isSubmitting = false
+    @State private var isDismissingRecap = false
 
     var body: some View {
         NavigationStack {
@@ -24,6 +26,10 @@ struct HomeView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
                         SpocoiHeader()
+
+                        if let recap {
+                            recapCard(recap)
+                        }
 
                         moonCard
 
@@ -79,6 +85,28 @@ struct HomeView: View {
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color.spocoiBrandSecondary.opacity(0.35))
         )
+    }
+
+    private func recapCard(_ recap: DailyRecap) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Recapitulare de ieri")
+                .font(.poppins(.semibold, size: 13))
+                .foregroundStyle(.secondary)
+                .textCase(.uppercase)
+            Text(recap.summary)
+                .font(.poppins(size: 15))
+                .foregroundStyle(Color.spocoiInk)
+            Button {
+                Task { await dismissRecap(recap) }
+            } label: {
+                Text("Am văzut")
+                    .font(.poppins(.medium, size: 13))
+            }
+            .foregroundStyle(Color.spocoiInk)
+            .disabled(isDismissingRecap)
+        }
+        .padding()
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var moodCheckinCard: some View {
@@ -159,7 +187,17 @@ struct HomeView: View {
     }
 
     private func load() async {
-        moodState = try? await authStore.authorizedGet("mood")
+        async let moodResult: MoodState? = try? await authStore.authorizedGet("mood")
+        async let recapResult: RecapResponse? = try? await authStore.authorizedGet("recap/daily")
+        moodState = await moodResult
+        recap = await recapResult?.recap
+    }
+
+    private func dismissRecap(_ recap: DailyRecap) async {
+        isDismissingRecap = true
+        self.recap = nil
+        let _: EmptyResponse? = try? await authStore.authorizedPost("recap/daily", body: DismissRecapBody(id: recap.id))
+        isDismissingRecap = false
     }
 
     private func submit(_ value: String) async {

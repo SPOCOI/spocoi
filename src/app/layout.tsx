@@ -1,5 +1,6 @@
 import { Poppins } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -20,7 +21,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             'unsafe-inline'. */}
         <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
-      <body className="min-h-screen font-sans antialiased">{children}</body>
+      <body className="min-h-screen font-sans antialiased">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
