@@ -5,7 +5,7 @@ export const dictionaries = {
     nav: { features: "Ce facem", pricing: "Prețuri", waitlist: "Intră pe waitlist", menu: "Deschide meniul" },
     footer: {
       blurb:
-        "Fără costuri mari, fără liste de așteptare, fără instalări — doar o conversație cu un AI empatic, oricând ai nevoie.",
+        "Fără costuri mari, fără liste de așteptare, fără să fii repezit — doar o conversație cu un AI empatic, oricând ai nevoie.",
       social: "Social",
       legal: "Legal",
       privacy: "Politica de confidențialitate",
@@ -222,7 +222,7 @@ export const dictionaries = {
   en: {
     nav: { features: "What we do", pricing: "Pricing", waitlist: "Join the waitlist", menu: "Open menu" },
     footer: {
-      blurb: "No high fees, no waiting lists, no installs — just a conversation with an empathetic AI, whenever you need it.",
+      blurb: "No high fees, no waiting lists, no being rushed — just a conversation with an empathetic AI, whenever you need it.",
       social: "Social",
       legal: "Legal",
       privacy: "Privacy Policy",
